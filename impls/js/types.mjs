@@ -19,3 +19,16 @@ export class MalList {
     }
 
 }
+export class MalVector {
+    list;
+    constructor(list) {
+        this.list = list;
+    }
+}
+
+export class MalString {
+    str;
+    constructor(str) {
+        this.str = str;
+    }
+}
