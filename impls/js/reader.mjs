@@ -1,7 +1,20 @@
-import { MalString, MalVector, MalList, MalInt, MalSymbol } from './types.mjs'
+import { MalString, MalVector, MalList, MalInt, MalSymbol, MalNil, MalFalse, MalTrue, MalHashMap } from './types.mjs'
 import fs from 'fs';
 
 const DEBUG = true;
+const EOF = "EOF";
+
+class EOFError extends Error {
+    constructor(msg) {
+        super(msg);
+    }
+}
+
+class NoTokensError extends Error {
+    constructor(msg) {
+        super(msg);
+    }
+}
 
 const logFile = "./log.txt";
 function log(msg,r) {
@@ -32,7 +45,7 @@ class Reader {
     next() {
         log("next", this)
         if (this.position === this.tokens.length - 1) {
-            return "EOF";
+            return EOF;
         }
         const current = this.tokens[this.position];
         this.position = this.position + 1;
@@ -60,8 +73,19 @@ function tokenize(str) {
 export function read_str(str) {
     log("read str")
     const tokens = tokenize(str);
+    if (tokens.length < 1) {
+        throw new NoTokensError(); 
+    }
     const r = new Reader(tokens);
-    return read_form(r);
+    try {
+        return read_form(r);
+    } catch(e) {
+        return EOF;
+    }
+}
+
+export function unescape_string(str) {
+    return str.replace(`\\"`, `\"`).replace("\\\\", "\\").replace("\\n", "\n");
 }
 
 function read_atom(r) {
@@ -70,55 +94,59 @@ function read_atom(r) {
     const asInt = parseInt(r.peek());
     if (!isNaN(asInt)) {
         return new MalInt(asInt);
+    } else if (a === "nil") {
+        return new MalNil();
+    } else if (a === "true") {
+        return new MalTrue();
+    } else if(a === "false") {
+        return new MalFalse();
+    } else if (a[0] === ":") {
+        return new MalString(a, true);
     } else if (a[0] === '"') {
+        if (a[a.length - 1] !== '"') {
+            throw new EOFError("EOF while reading string")
+        }
         return new MalString(a);
     } else{
         return new MalSymbol(a);
     }
 }
 
-function read_list(r) {
-    log("read list")
+function read_list(r, delimiter) {
+    log("read list/vector/hashmap")
+    const delimiterMap = {
+        "(": ")",
+        "{": "}",
+        "[": "]"
+    }
     const res = []
     while (true) {
         const n = r.next();
         if (n === "EOF") {
-            return "EOF"
+            throw new EOFError("EOF while reading list/vector/hashmap");
         }
-        if (r.peek() === ")") {
+        if (r.peek() === delimiterMap[delimiter]) {
             break;
         }
         res.push(read_form(r));
     }
-
-    return new MalList(res);
-}
-
-function read_vector(r) {
-    log("read vector")
-    const res = []
-    while (true) {
-        const n = r.next();
-        if (n === "EOF") {
-            return "EOF"
-        }
-        if (r.peek() === "]") {
-            break;
-        }
-        res.push(read_form(r));
+    if (delimiter === "(") {
+        return new MalList(res);
+    } else if (delimiter === "[") {
+        return new MalVector(res);
+    } else {
+        return new MalHashMap(res);
     }
 
-    return new MalVector(res);
 }
 
 function read_form(r) {
     log("read form")
     const token = r.peek()
     let ret = null;
-    if (token[0] === "(") {
-        ret = read_list(r);
-    } else if (token[0] === "[") {
-        ret = read_vector(r);
+    const first_char = token[0];
+    if (["(", "[", "{"].includes(first_char)) {
+        ret = read_list(r, first_char);
     } else {
         ret = read_atom(r);
     }

@@ -21,8 +21,15 @@ function rep(line) {
 
 var rl = readline.createInterface({input: process.stdin, output: process.stdout});
 function onLine(line) {
-    console.log(rep(line));
-    rl.prompt();
+    let output;
+    try {
+        output = rep(line);
+        console.log(output);
+    } catch(e) {
+
+    } finally {
+        rl.prompt();
+    }
 }
 
 function onClose() {

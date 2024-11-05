@@ -28,7 +28,30 @@ export class MalVector {
 
 export class MalString {
     str;
-    constructor(str) {
+    constructor(str, is_keyword=false) {
+        if (is_keyword) {
+            this.str = 0x29E + str;
+        }
         this.str = str;
+    }
+}
+
+export class MalTrue {
+
+}
+
+export class MalFalse {
+
+}
+
+export class MalNil {
+
+}
+
+export class MalHashMap {
+    map;
+    constructor(map) {
+
+        this.map = map;
     }
 }
