@@ -84,8 +84,9 @@ export function read_str(str) {
     }
 }
 
+
 export function unescape_string(str) {
-    return str.replace(`\\"`, `\"`).replace("\\\\", "\\").replace("\\n", "\n");
+    return str.replaceAll(`\\"`, `\"`).replace("\\\\", "\\");
 }
 
 function read_atom(r) {
@@ -103,10 +104,15 @@ function read_atom(r) {
     } else if (a[0] === ":") {
         return new MalString(a, true);
     } else if (a[0] === '"') {
-        if (a[a.length - 1] !== '"') {
+        const lastChar = a[a.length - 1]; 
+        if (lastChar !== '"' || a.length === 1) {
             throw new EOFError("EOF while reading string")
-        }
-        return new MalString(a);
+        } 
+        console.log("before", a.split(""))
+        const a_escaped = unescape_string(a);
+        console.log("after", a_escaped.split(""))
+
+        return new MalString(a_escaped.slice(1, a_escaped.length -1 ));
     } else{
         return new MalSymbol(a);
     }

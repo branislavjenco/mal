@@ -12,7 +12,7 @@ function EVAL(line) {
 }
 
 function PRINT(line) {
-    return pr_str(line);
+    return pr_str(line, true);
 }
 
 function rep(line) {
