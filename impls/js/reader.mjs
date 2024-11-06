@@ -104,13 +104,21 @@ function read_atom(r) {
     } else if (a[0] === ":") {
         return new MalString(a, true);
     } else if (a[0] === '"') {
-        const lastChar = a[a.length - 1]; 
-        if (lastChar !== '"' || a.length === 1) {
+        if (a[a.length-1] !== '"') {
             throw new EOFError("EOF while reading string")
-        } 
-        console.log("before", a.split(""))
-        const a_escaped = unescape_string(a);
-        console.log("after", a_escaped.split(""))
+        }
+        // console.log("before", a.split(""))
+        try {
+            let _ = JSON.stringify(a);
+            // console.log("stringified", _)
+        } catch(e) {
+            throw new EOFError("EOF while reading string")
+        }
+        const a_escaped = a;
+        // console.log("after", a_escaped.split(""))
+        if (a_escaped === "\"") {
+            throw new EOFError("EOF while reading string")
+        }
 
         return new MalString(a_escaped.slice(1, a_escaped.length -1 ));
     } else{
