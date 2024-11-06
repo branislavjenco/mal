@@ -9,7 +9,7 @@ export function pr_str(node, print_readably) {
         return node;
     }
     if (node instanceof MalInt) {
-        return node.i.toString();
+        return node.value.toString();
     } else if (node instanceof MalString) {
         // console.log("Fdoo", node)
         if (node.str[0] === 0x29E) {

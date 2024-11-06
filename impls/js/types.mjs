@@ -1,7 +1,7 @@
 export class MalInt {
-    i;
-    constructor(i) {
-        this.i = i;
+    value;
+    constructor(value) {
+        this.value = value;
     }
 }
 
