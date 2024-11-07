@@ -30,9 +30,10 @@ export class MalString {
     str;
     constructor(str, is_keyword=false) {
         if (is_keyword) {
-            this.str = 0x29E + str;
+            this.str = "\u029e" + str.slice(1);
+        } else {
+            this.str = str;
         }
-        this.str = str;
     }
 }
 

@@ -2,7 +2,7 @@ import readline from 'readline';
 import { read_str } from './reader.mjs';
 import { pr_str } from './printer.mjs';
 import fs from 'fs';
-import { MalList, MalSymbol, MalInt } from './types.mjs';
+import { MalList, MalSymbol, MalInt, MalHashMap, MalVector } from './types.mjs';
 
 const repl_env = {'+': (a,b) => new MalInt(a.value+b.value),
     '-': (a,b) => new MalInt(a.value-b.value),
@@ -34,6 +34,10 @@ function EVAL(ast, env) {
         } catch(e) {
             console.log(e)
         }
+    } else if (ast instanceof MalVector) {
+        return new MalVector(ast.list.map(item => EVAL(item, env)))
+    } else if (ast instanceof MalHashMap) {
+        return new MalHashMap(ast.map.map(item => EVAL(item, env)))
     } else {
         return ast;
     }

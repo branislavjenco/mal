@@ -11,13 +11,10 @@ export function pr_str(node, print_readably) {
     if (node instanceof MalInt) {
         return node.value.toString();
     } else if (node instanceof MalString) {
-        // console.log("Fdoo", node)
-        if (node.str[0] === 0x29E) {
+        if (node.str[0] === "\u029e") {
             return ":" + node.str.slice(1);
         }
         if (print_readably) {
-            // console.log("before", node.str.split(""))
-            // console.log("after", escaped.split(""))
             return '"' + node.str + '"';
         } else {
             return '"' + node.str + '"';
