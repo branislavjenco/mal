@@ -1,3 +1,5 @@
+import { MalList } from "./types.mjs";
+
 export class KeyNotFoundError extends Error {
     constructor(msg) {
         super(msg);
@@ -8,9 +10,12 @@ export class KeyNotFoundError extends Error {
 export class Env {
     outer;
     data;
-    constructor(outer) {
+    constructor(outer, binds = new MalList([]), exprs = []) {
         this.outer = outer;
         this.data = {};
+        for (let i = 0; i < binds.value.length; i++) {
+            this.data[binds.value[i].value] = exprs[i];
+        }
     }
 
     set(key, val) {

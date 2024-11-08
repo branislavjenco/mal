@@ -1,4 +1,4 @@
-import { MalList, MalString, MalInt, MalSymbol, MalVector, MalTrue, MalHashMap, MalFalse, MalNil } from './types.mjs';
+import { MalList, MalString, MalInt, MalSymbol, MalVector, MalTrue, MalHashMap, MalFalse, MalNil, MalFn } from './types.mjs';
 
 
 export function escape_string(str) {
@@ -33,5 +33,7 @@ export function pr_str(node, print_readably) {
         return "nil";
     } else if (node instanceof MalHashMap) {
         return "{" + node.value.map(el => pr_str(el, true)).join(" ") + "}";
+    } else if (node instanceof MalFn) {
+        return "#\<function>";
     }
 }

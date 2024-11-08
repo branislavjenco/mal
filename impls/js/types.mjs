@@ -26,6 +26,13 @@ export class MalVector {
     }
 }
 
+export class MalHashMap {
+    value;
+    constructor(value) {
+        this.value = value;
+    }
+}
+
 export class MalString {
     value;
     constructor(value, is_keyword=false) {
@@ -35,6 +42,14 @@ export class MalString {
             this.value = value;
         }
     }
+}
+
+export class MalFn {
+    value;
+    constructor(value) {
+        this.value = value;
+    }
+
 }
 
 export class MalTrue {
@@ -49,10 +64,3 @@ export class MalNil {
 
 }
 
-export class MalHashMap {
-    value;
-    constructor(value) {
-
-        this.value = value;
-    }
-}
