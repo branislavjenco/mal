@@ -1,66 +1,48 @@
-export class MalInt {
-    value;
-    constructor(value) {
-        this.value = value;
+export class MalType {
+    static get type() {
+        return MalType.prototype.constructor.name;
+    }
+    get type() {
+        return this.constructor.name
+    }
+    val;
+    constructor(val) {
+        this.val = val;
     }
 }
 
-export class MalSymbol {
-    value;
-    constructor(value) {
-        this.value = value;
-    }
-}
+export class MalInt extends MalType {}
 
-export class MalList {
-    value;
-    constructor(value) {
-        this.value = value;
-    }
+export class MalSymbol extends MalType {}
 
-}
-export class MalVector {
-    value;
-    constructor(value) {
-        this.value = value;
-    }
-}
-
-export class MalHashMap {
-    value;
-    constructor(value) {
-        this.value = value;
-    }
-}
-
-export class MalString {
-    value;
-    constructor(value, is_keyword=false) {
+export class MalList extends MalType {}
+export class MalVector extends MalType {}
+export class MalHashMap extends MalType {}
+export class MalFn extends MalType {}
+export class MalString extends MalType {
+    constructor(val, is_keyword=false) {
         if (is_keyword) {
-            this.value = "\u029e" + value.slice(1);
+            super("\u029e" + val.slice(1));
         } else {
-            this.value = value;
+            super(val);
         }
     }
 }
 
-export class MalFn {
-    value;
-    constructor(value) {
-        this.value = value;
+export class MalTrue extends MalType {
+    constructor() {
+        super(true);
     }
-
 }
 
-export class MalTrue {
-
+export class MalFalse extends MalType {
+    constructor() {
+        super(false);
+    }
 }
 
-export class MalFalse {
-
+export class MalNil extends MalType {
+    constructor() {
+        super(null);
+    }
 }
-
-export class MalNil {
-
-}
-

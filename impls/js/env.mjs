@@ -13,8 +13,8 @@ export class Env {
     constructor(outer, binds = new MalList([]), exprs = []) {
         this.outer = outer;
         this.data = {};
-        for (let i = 0; i < binds.value.length; i++) {
-            this.data[binds.value[i].value] = exprs[i];
+        for (let i = 0; i < binds.val.length; i++) {
+            this.data[binds.val[i].val] = exprs[i];
         }
     }
 

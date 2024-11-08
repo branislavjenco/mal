@@ -4,7 +4,7 @@ import { pr_str } from './printer.mjs';
 import { Env, KeyNotFoundError } from './env.mjs';
 import { ns } from './core.mjs';
 import fs from 'fs';
-import { MalList, MalSymbol, MalInt, MalHashMap, MalVector, MalFn } from './types.mjs';
+import { MalList, MalSymbol, MalInt, MalFalse, MalHashMap, MalVector, MalFn, MalNil } from './types.mjs';
 
 const repl_env = new Env(null)
 for (const [k, v] of Object.entries(ns)) {
@@ -16,7 +16,7 @@ function READ(line) {
 }
 
 function isSymbol(node, val) {
-    return node instanceof MalSymbol && node.value === val;
+    return node instanceof MalSymbol && node.val === val;
 }
 
 function EVAL(ast, env) {
@@ -28,55 +28,59 @@ function EVAL(ast, env) {
     }
     catch (e) {}
     if (ast instanceof MalSymbol) {
-        return env.get(ast.value);
-    } else if (ast instanceof MalList && ast.value.length > 0) {
-        const first = ast.value[0];
+        return env.get(ast.val);
+    } else if (ast instanceof MalList && ast.val.length > 0) {
+        const first = ast.val[0];
         if (isSymbol(first, "def!")) {
-            return env.set(ast.value[1].value, EVAL(ast.value[2], env));
-        } else if (isSymbol(first, "let*") && (ast.value[1] instanceof MalList || ast.value[1] instanceof MalVector)) { 
+            return env.set(ast.val[1].val, EVAL(ast.val[2], env));
+        } else if (isSymbol(first, "let*") && (ast.val[1] instanceof MalList || ast.val[1] instanceof MalVector)) { 
             const newEnv = new Env(env);
-            const list = ast.value[1].value;
+            const list = ast.val[1].val;
             for (let i = 0; i < list.length; i = i + 2) {
-                const key = list[i].value;
+                const key = list[i].val;
                 const val = EVAL(list[i+1], newEnv);
                 newEnv.set(key, val);
             }
-            return EVAL(ast.value[2], newEnv);
+            return EVAL(ast.val[2], newEnv);
         } else if (isSymbol(first, "do")) {
-            for (const item of ast.value.slice(1, -1)) {
+            for (const item of ast.val.slice(1, -1)) {
                 EVAL(item, env);
             }
-            return EVAL(ast.value[ast.value.length - 1], env)
+            return EVAL(ast.val[ast.val.length - 1], env)
         } else if (isSymbol(first, "if")) {
-            const condition = EVAL(ast.value[1], env);
-            const ifBranch = ast.value[2];
-            const elseBranch = ast.value[3];
-            if (condition) {
-                return EVAL(ifBranch, env);
+            const condition = EVAL(ast.val[1], env);
+            const ifBranch = ast.val[2];
+            const elseBranch = ast.val[3];
+            if (condition instanceof MalNil || condition instanceof MalFalse) {
+                if (elseBranch === undefined) {
+                    return new MalNil(); 
+                } else {
+                    return EVAL(elseBranch, env);
+                }
             } else {
-                return EVAL(elseBranch, env);
+                return EVAL(ifBranch, env);
             }
         } else if (isSymbol(first, "fn*")) {
             return new MalFn((...params) => {
                 // console.log("params", params)
-                // console.log("cl", ast.value[1], ast.value[2])
-                const newEnv = new Env(env, ast.value[1], params);
+                // console.log("cl", ast.val[1], ast.val[2])
+                const newEnv = new Env(env, ast.val[1], params);
                 // console.log(newEnv)
-                return EVAL(ast.value[2], newEnv);
+                return EVAL(ast.val[2], newEnv);
             })
         } else {
-            const evaledList = ast.value.map((item) => EVAL(item, env));
+            const evaledList = ast.val.map((item) => EVAL(item, env));
             // console.log(evaledList)
             try {
-                return evaledList[0].value(...evaledList.slice(1));
+                return evaledList[0].val(...evaledList.slice(1));
             } catch (e) {
                 console.log(e);
             }
         }
     } else if (ast instanceof MalVector) {
-        return new MalVector(ast.value.map((item) => EVAL(item, env)));
+        return new MalVector(ast.val.map((item) => EVAL(item, env)));
     } else if (ast instanceof MalHashMap) {
-        return new MalHashMap(ast.value.map((item) => EVAL(item, env)));
+        return new MalHashMap(ast.val.map((item) => EVAL(item, env)));
     } else {
         return ast;
     }

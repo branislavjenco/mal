@@ -6,10 +6,10 @@ import fs from 'fs';
 import { MalList, MalSymbol, MalInt, MalHashMap, MalVector } from './types.mjs';
 
 const repl_env = new Env(null)
-repl_env.set("+", (a, b) => new MalInt(a.value + b.value));
-repl_env.set("-", (a, b) => new MalInt(a.value - b.value));
-repl_env.set("*", (a, b) => new MalInt(a.value * b.value));
-repl_env.set("/", (a, b) => new MalInt(Math.floor(a.value / b.value)));
+repl_env.set("+", (a, b) => new MalInt(a.val + b.val));
+repl_env.set("-", (a, b) => new MalInt(a.val - b.val));
+repl_env.set("*", (a, b) => new MalInt(a.val * b.val));
+repl_env.set("/", (a, b) => new MalInt(Math.floor(a.val / b.val)));
 
 function READ(line) {
     return read_str(line);
@@ -25,21 +25,21 @@ function EVAL(ast, env) {
     }
     catch (e) {}
     if (ast instanceof MalSymbol) {
-        return env.get(ast.value);
-    } else if (ast instanceof MalList && ast.value.length > 0) {
-        if (ast.value[0] instanceof MalSymbol && ast.value[0].value === "def!") {
-            return env.set(ast.value[1].value, EVAL(ast.value[2], env));
-        } else if (ast.value[0] instanceof MalSymbol && ast.value[0].value === "let*" && (ast.value[1] instanceof MalList || ast.value[1] instanceof MalVector)) { 
+        return env.get(ast.val);
+    } else if (ast instanceof MalList && ast.val.length > 0) {
+        if (ast.val[0] instanceof MalSymbol && ast.val[0].val === "def!") {
+            return env.set(ast.val[1].val, EVAL(ast.val[2], env));
+        } else if (ast.val[0] instanceof MalSymbol && ast.val[0].val === "let*" && (ast.val[1] instanceof MalList || ast.val[1] instanceof MalVector)) { 
             const newEnv = new Env(env);
-            const list = ast.value[1].value;
+            const list = ast.val[1].val;
             for (let i = 0; i < list.length; i = i + 2) {
-                const key = list[i].value;
+                const key = list[i].val;
                 const val = EVAL(list[i+1], newEnv);
                 newEnv.set(key, val);
             }
-            return EVAL(ast.value[2], newEnv);
+            return EVAL(ast.val[2], newEnv);
         } else {
-            const evaledList = ast.value.map((item) => EVAL(item, env));
+            const evaledList = ast.val.map((item) => EVAL(item, env));
             try {
                 return evaledList[0](...evaledList.slice(1));
             } catch (e) {
@@ -47,9 +47,9 @@ function EVAL(ast, env) {
             }
         }
     } else if (ast instanceof MalVector) {
-        return new MalVector(ast.value.map((item) => EVAL(item, env)));
+        return new MalVector(ast.val.map((item) => EVAL(item, env)));
     } else if (ast instanceof MalHashMap) {
-        return new MalHashMap(ast.value.map((item) => EVAL(item, env)));
+        return new MalHashMap(ast.val.map((item) => EVAL(item, env)));
     } else {
         return ast;
     }

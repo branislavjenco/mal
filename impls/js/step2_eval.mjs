@@ -4,10 +4,10 @@ import { pr_str } from './printer.mjs';
 import fs from 'fs';
 import { MalList, MalSymbol, MalInt, MalHashMap, MalVector } from './types.mjs';
 
-const repl_env = {'+': (a,b) => new MalInt(a.value+b.value),
-    '-': (a,b) => new MalInt(a.value-b.value),
-    '*': (a,b) => new MalInt(a.value*b.value),
-    '/': (a,b) => new MalInt(Math.floor(a.value/b.value))}
+const repl_env = {'+': (a,b) => new MalInt(a.val+b.val),
+    '-': (a,b) => new MalInt(a.val-b.val),
+    '*': (a,b) => new MalInt(a.val*b.val),
+    '/': (a,b) => new MalInt(Math.floor(a.val/b.val))}
 
 class NotFoundError extends Error {
     constructor(msg) {
@@ -21,23 +21,23 @@ function READ(line) {
 
 function EVAL(ast, env) {
     if (ast instanceof MalSymbol) {
-        if (env.hasOwnProperty(ast.value)) {
-            return env[ast.value];
+        if (env.hasOwnProperty(ast.val)) {
+            return env[ast.val];
         } else {
 
-            throw new NotFoundError(`${ast.value} not defined.`); 
+            throw new NotFoundError(`${ast.val} not defined.`); 
         }
-    } else if (ast instanceof MalList && ast.value.length > 0) { 
-        const evaledList = ast.value.map(item => EVAL(item, env))
+    } else if (ast instanceof MalList && ast.val.length > 0) { 
+        const evaledList = ast.val.map(item => EVAL(item, env))
         try {
             return evaledList[0](...evaledList.slice(1));
         } catch(e) {
             console.log(e)
         }
     } else if (ast instanceof MalVector) {
-        return new MalVector(ast.value.map(item => EVAL(item, env)))
+        return new MalVector(ast.val.map(item => EVAL(item, env)))
     } else if (ast instanceof MalHashMap) {
-        return new MalHashMap(ast.value.map(item => EVAL(item, env)))
+        return new MalHashMap(ast.val.map(item => EVAL(item, env)))
     } else {
         return ast;
     }
