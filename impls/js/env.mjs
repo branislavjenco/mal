@@ -1,4 +1,4 @@
-class KeyNotFoundError extends Error {
+export class KeyNotFoundError extends Error {
     constructor(msg) {
         super(msg);
     }
@@ -25,7 +25,7 @@ export class Env {
             if (this.outer !== null) {
                 return this.outer.get(key);
             } else {
-                throw new KeyNotFoundError("Symbol wasn't found in the env");
+                throw new KeyNotFoundError(`${key} not found`);
             }
         }
 

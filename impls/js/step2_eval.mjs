@@ -21,23 +21,23 @@ function READ(line) {
 
 function EVAL(ast, env) {
     if (ast instanceof MalSymbol) {
-        if (env.hasOwnProperty(ast.name)) {
-            return env[ast.name];
+        if (env.hasOwnProperty(ast.value)) {
+            return env[ast.value];
         } else {
 
-            throw new NotFoundError(`${ast.name} not defined.`); 
+            throw new NotFoundError(`${ast.value} not defined.`); 
         }
-    } else if (ast instanceof MalList && ast.list.length > 0) { 
-        const evaledList = ast.list.map(item => EVAL(item, env))
+    } else if (ast instanceof MalList && ast.value.length > 0) { 
+        const evaledList = ast.value.map(item => EVAL(item, env))
         try {
             return evaledList[0](...evaledList.slice(1));
         } catch(e) {
             console.log(e)
         }
     } else if (ast instanceof MalVector) {
-        return new MalVector(ast.list.map(item => EVAL(item, env)))
+        return new MalVector(ast.value.map(item => EVAL(item, env)))
     } else if (ast instanceof MalHashMap) {
-        return new MalHashMap(ast.map.map(item => EVAL(item, env)))
+        return new MalHashMap(ast.value.map(item => EVAL(item, env)))
     } else {
         return ast;
     }

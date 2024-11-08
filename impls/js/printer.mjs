@@ -11,20 +11,20 @@ export function pr_str(node, print_readably) {
     if (node instanceof MalInt) {
         return node.value.toString();
     } else if (node instanceof MalString) {
-        if (node.str[0] === "\u029e") {
-            return ":" + node.str.slice(1);
+        if (node.value[0] === "\u029e") {
+            return ":" + node.value.slice(1);
         }
         if (print_readably) {
-            return '"' + node.str + '"';
+            return '"' + node.value + '"';
         } else {
-            return '"' + node.str + '"';
+            return '"' + node.value + '"';
         }
     } else if (node instanceof MalSymbol) {
-        return node.name;
+        return node.value;
     } else if (node instanceof MalList) {
-        return "(" + node.list.map(el => pr_str(el, true)).join(" ") + ")";
+        return "(" + node.value.map(el => pr_str(el, true)).join(" ") + ")";
     } else if (node instanceof MalVector) {
-        return "[" + node.list.map(el => pr_str(el, true)).join(" ") + "]";
+        return "[" + node.value.map(el => pr_str(el, true)).join(" ") + "]";
     } else if (node instanceof MalTrue) {
         return "true";
     } else if (node instanceof MalFalse) {
@@ -32,6 +32,6 @@ export function pr_str(node, print_readably) {
     } else if (node instanceof MalNil) {
         return "nil";
     } else if (node instanceof MalHashMap) {
-        return "{" + node.map.map(el => pr_str(el, true)).join(" ") + "}";
+        return "{" + node.value.map(el => pr_str(el, true)).join(" ") + "}";
     }
 }

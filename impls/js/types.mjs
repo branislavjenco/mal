@@ -6,33 +6,33 @@ export class MalInt {
 }
 
 export class MalSymbol {
-    name;
-    constructor(name) {
-        this.name = name;
+    value;
+    constructor(value) {
+        this.value = value;
     }
 }
 
 export class MalList {
-    list;
-    constructor(list) {
-        this.list = list;
+    value;
+    constructor(value) {
+        this.value = value;
     }
 
 }
 export class MalVector {
-    list;
-    constructor(list) {
-        this.list = list;
+    value;
+    constructor(value) {
+        this.value = value;
     }
 }
 
 export class MalString {
-    str;
-    constructor(str, is_keyword=false) {
+    value;
+    constructor(value, is_keyword=false) {
         if (is_keyword) {
-            this.str = "\u029e" + str.slice(1);
+            this.value = "\u029e" + value.slice(1);
         } else {
-            this.str = str;
+            this.value = value;
         }
     }
 }
@@ -50,9 +50,9 @@ export class MalNil {
 }
 
 export class MalHashMap {
-    map;
-    constructor(map) {
+    value;
+    constructor(value) {
 
-        this.map = map;
+        this.value = value;
     }
 }
