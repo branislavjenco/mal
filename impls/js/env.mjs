@@ -10,12 +10,21 @@ export class KeyNotFoundError extends Error {
 export class Env {
     outer;
     data;
-    constructor(outer, binds = new MalList([]), exprs = []) {
+    constructor(outer, binds = new MalList([]), exprs = new MalList([])) {
+        console.log("binds", binds);
+        console.log("exprs", exprs)
         this.outer = outer;
         this.data = {};
         for (let i = 0; i < binds.val.length; i++) {
-            this.data[binds.val[i].val] = exprs[i];
+            const bind = binds.val[i].val;
+            if (bind === "&") {
+                this.data[binds.val[i+1].val] = new MalList(exprs.val.slice(i));
+                break;
+            } else {
+                this.data[bind] = exprs.val[i];
+            }
         }
+        console.log(this.data);
     }
 
     set(key, val) {

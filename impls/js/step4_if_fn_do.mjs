@@ -11,6 +11,8 @@ for (const [k, v] of Object.entries(ns)) {
     repl_env.set(k, v);
 }
 
+rep("(def! not (fn* (a) (if a false true)))");
+
 function READ(line) {
     return read_str(line);
 }
@@ -64,7 +66,8 @@ function EVAL(ast, env) {
             return new MalFn((...params) => {
                 // console.log("params", params)
                 // console.log("cl", ast.val[1], ast.val[2])
-                const newEnv = new Env(env, ast.val[1], params);
+                const binds = ast.val[1];
+                const newEnv = new Env(env, binds, new MalList(params));
                 // console.log(newEnv)
                 return EVAL(ast.val[2], newEnv);
             })

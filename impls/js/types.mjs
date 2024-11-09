@@ -11,15 +11,43 @@ export class MalType {
     }
 }
 
-export class MalInt extends MalType {}
+export class MalInt extends MalType {
+    static get type() {
+        return MalInt.prototype.constructor.name;
+    }
+}
 
-export class MalSymbol extends MalType {}
+export class MalSymbol extends MalType {
+    static get type() {
+        return MalSymbol.prototype.constructor.name;
+    }
+}
 
-export class MalList extends MalType {}
-export class MalVector extends MalType {}
-export class MalHashMap extends MalType {}
-export class MalFn extends MalType {}
+export class MalList extends MalType {
+    static get type() {
+        return MalList.prototype.constructor.name;
+    }
+}
+
+export class MalVector extends MalType {
+    static get type() {
+        return MalVector.prototype.constructor.name;
+    }
+}
+export class MalHashMap extends MalType {
+    static get type() {
+        return MalHashMap.prototype.constructor.name;
+    }
+}
+export class MalFn extends MalType {
+    static get type() {
+        return MalFn.prototype.constructor.name;
+    }
+}
 export class MalString extends MalType {
+    static get type() {
+        return MalString.prototype.constructor.name;
+    }
     constructor(val, is_keyword=false) {
         if (is_keyword) {
             super("\u029e" + val.slice(1));
@@ -30,18 +58,27 @@ export class MalString extends MalType {
 }
 
 export class MalTrue extends MalType {
+    static get type() {
+        return MalTrue.prototype.constructor.name;
+    }
     constructor() {
         super(true);
     }
 }
 
 export class MalFalse extends MalType {
+    static get type() {
+        return MalFalse.prototype.constructor.name;
+    }
     constructor() {
         super(false);
     }
 }
 
 export class MalNil extends MalType {
+    static get type() {
+        return MalNil.prototype.constructor.name;
+    }
     constructor() {
         super(null);
     }
