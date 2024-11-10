@@ -32,12 +32,10 @@ function isSymbol(node, val) {
 
 function EVAL(ast, env) {
     while (true) {
-        try {
-            const debug = env.get("DEBUG-EVAL");
-            if (debug) {
-                console.log(`EVAL: ${pr_str(ast, true)}`);
-            }
-        } catch (e) {}
+        const debug = env.get("DEBUG-EVAL");
+        if (debug) {
+            console.log(`EVAL: ${pr_str(ast, true)}`);
+        }
         if (ast instanceof MalSymbol) {
             return env.get(ast.val);
         } else if (ast instanceof MalList && ast.val.length > 0) {

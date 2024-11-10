@@ -1,5 +1,8 @@
+import { readFileSync } from 'fs';
 import { pr_str } from './printer.mjs';
+import { read_str } from './reader.mjs';
 import { MalFn, MalInt, MalList, MalNil, MalVector, MalTrue, MalFalse, MalString } from './types.mjs';
+import { EVAL } from './step6_file.mjs';
 
 function malBoolean(val) {
     if (val) {
@@ -31,10 +34,6 @@ function malEqual(a, b) {
 }
 
 export const ns = {
-    "+": new MalFn((a, b) => new MalInt(a.val + b.val)),
-    "-": new MalFn((a, b) => new MalInt(a.val - b.val)),
-    "*": new MalFn((a, b) => new MalInt(a.val * b.val)),
-    "/": new MalFn((a, b) => new MalInt(Math.floor(a.val / b.val))),
     "list": new MalFn((...args) => { return new MalList(args) }),
     "list?": new MalFn((l, ...rest) => { return malBoolean(l instanceof MalList) }),
     "prn": new MalFn((first, ...rest) => {
@@ -63,6 +62,20 @@ export const ns = {
             return new MalInt(0);
         }
     }),
+    "read-string": new MalFn((str) => { 
+        try {
+            return read_str(str.val); 
+        } catch(e) {
+            return new MalNil();
+        }
+    }),
+    "slurp": new MalFn((filename) => {
+        return new MalString(readFileSync(filename.val, { encoding: 'utf8', flag: 'r' }));
+    }),
+    "+": new MalFn((a, b) => new MalInt(a.val + b.val)),
+    "-": new MalFn((a, b) => new MalInt(a.val - b.val)),
+    "*": new MalFn((a, b) => new MalInt(a.val * b.val)),
+    "/": new MalFn((a, b) => new MalInt(Math.floor(a.val / b.val))),
     "=": new MalFn((a, b, ...rest) => {
         return malEqual(a, b);
     }),

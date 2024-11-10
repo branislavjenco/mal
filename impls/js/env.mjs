@@ -39,7 +39,7 @@ export class Env {
             if (this.outer !== null) {
                 return this.outer.get(key);
             } else {
-                throw new KeyNotFoundError(`${key} not found`);
+                return null;
             }
         }
 

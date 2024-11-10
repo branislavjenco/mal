@@ -22,13 +22,10 @@ function isSymbol(node, val) {
 }
 
 function EVAL(ast, env) {
-    try {
-        const debug = env.get("DEBUG-EVAL");
-        if (debug) {
-            console.log(`EVAL: ${pr_str(ast, true)}`);
-        }
+    const debug = env.get("DEBUG-EVAL");
+    if (debug) {
+        console.log(`EVAL: ${pr_str(ast, true)}`);
     }
-    catch (e) {}
     if (ast instanceof MalSymbol) {
         return env.get(ast.val);
     } else if (ast instanceof MalList && ast.val.length > 0) {
