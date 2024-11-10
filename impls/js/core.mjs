@@ -44,6 +44,17 @@ export const ns = {
     "pr-str": new MalFn((...args) => {
         return new MalString(args.map(arg => pr_str(arg, true)).join(" "));
     }),
+    "str": new MalFn((...args) => {
+        return new MalString(args.map(arg => pr_str(arg, false)).join(""));
+    }),
+    "prn": new MalFn((...args) => {
+        console.log(args.map(arg => pr_str(arg, true)).join(" "));
+        return new MalNil();
+    }),
+    "println": new MalFn((...args) => {
+        console.log(args.map(arg => pr_str(arg, false)).join(" "));
+        return new MalNil();
+    }),
     "empty?": new MalFn((l, ...rest) => { return malBoolean(l.val.length === 0) }),
     "count": new MalFn((l, ...rest) => { 
         if (l instanceof MalList || l instanceof MalVector) {

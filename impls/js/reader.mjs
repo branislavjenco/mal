@@ -84,11 +84,6 @@ export function read_str(str) {
     }
 }
 
-
-export function unescape_string(str) {
-    return str.replaceAll(`\\"`, `\"`).replace("\\\\", "\\");
-}
-
 function read_atom(r) {
     log("read atom")
     const a = r.peek();
@@ -104,24 +99,9 @@ function read_atom(r) {
     } else if (a[0] === ":") {
         return new MalString(a, true);
     } else if (a[0] === '"') {
-        if (a[a.length-1] !== '"') {
-            throw new EOFError("EOF while reading string")
-        }
-        // console.log("before", a.split(""))
-        try {
-            let _ = JSON.stringify(a);
-            // console.log("stringified", _)
-        } catch(e) {
-            throw new EOFError("EOF while reading string")
-        }
-        const a_escaped = a;
-        // console.log("after", a_escaped.split(""))
-        if (a_escaped === "\"") {
-            throw new EOFError("EOF while reading string")
-        }
-
-        return new MalString(a_escaped.slice(1, a_escaped.length -1 ));
-    } else{
+        const res = eval(a)
+        return new MalString(res);
+    } else {
         return new MalSymbol(a);
     }
 }
