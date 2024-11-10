@@ -11,8 +11,8 @@ export class Env {
     outer;
     data;
     constructor(outer, binds = new MalList([]), exprs = new MalList([])) {
-        console.log("binds", binds);
-        console.log("exprs", exprs)
+        // console.log("binds", binds);
+        // console.log("exprs", exprs)
         this.outer = outer;
         this.data = {};
         for (let i = 0; i < binds.val.length; i++) {
@@ -24,7 +24,7 @@ export class Env {
                 this.data[bind] = exprs.val[i];
             }
         }
-        console.log(this.data);
+        // console.log(this.data);
     }
 
     set(key, val) {

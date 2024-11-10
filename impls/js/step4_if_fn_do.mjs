@@ -64,16 +64,12 @@ function EVAL(ast, env) {
             }
         } else if (isSymbol(first, "fn*")) {
             return new MalFn((...params) => {
-                // console.log("params", params)
-                // console.log("cl", ast.val[1], ast.val[2])
                 const binds = ast.val[1];
                 const newEnv = new Env(env, binds, new MalList(params));
-                // console.log(newEnv)
                 return EVAL(ast.val[2], newEnv);
             })
         } else {
             const evaledList = ast.val.map((item) => EVAL(item, env));
-            // console.log(evaledList)
             try {
                 return evaledList[0].val(...evaledList.slice(1));
             } catch (e) {
