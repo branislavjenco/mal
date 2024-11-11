@@ -21,7 +21,12 @@ function EVAL(ast, env) {
         console.log(`EVAL: ${pr_str(ast, true)}`);
     }
     if (ast instanceof MalSymbol) {
-        return env.get(ast.val);
+        const found = env.get(ast.val)
+        if (found) {
+            return found;
+        } else {
+            throw new KeyNotFoundError(`${ast.val} not found.`);
+        }
     } else if (ast instanceof MalList && ast.val.length > 0) {
         if (ast.val[0] instanceof MalSymbol && ast.val[0].val === "def!") {
             return env.set(ast.val[1].val, EVAL(ast.val[2], env));

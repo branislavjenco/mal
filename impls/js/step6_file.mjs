@@ -33,19 +33,32 @@ function isSymbol(node, val) {
     return node instanceof MalSymbol && node.val === val;
 }
 
+const max_iterations = 10;
+let iterations = 0;
+
 export function EVAL(ast, env) {
-    while (true) {
+    while (iterations < max_iterations) {
         try {
             const debug = env.get("DEBUG-EVAL");
             if (debug) {
                 console.log(`EVAL: ${pr_str(ast, true)}`);
             }
             if (ast instanceof MalSymbol) {
-                return env.get(ast.val);
+                const found = env.get(ast.val)
+                if (found) {
+                    return found;
+                } else {
+                    throw new KeyNotFoundError(`${ast.val} not found.`);
+                }
             } else if (ast instanceof MalList && ast.val.length > 0) {
                 const first = ast.val[0];
                 if (isSymbol(first, "def!")) {
-                    return env.set(ast.val[1].val, EVAL(ast.val[2], env));
+                    try {
+                        const evaled = EVAL(ast.val[2], env);
+                        return env.set(ast.val[1].val, evaled);
+                    } catch (e) {
+                        throw e; 
+                    }
                 } else if (
                     isSymbol(first, "let*") &&
                     (ast.val[1] instanceof MalList ||
@@ -131,6 +144,7 @@ export function EVAL(ast, env) {
             } else {
                 return ast;
             }
+            iterations++;
         } catch (e) {
             throw e;
         }

@@ -2,7 +2,6 @@ import { readFileSync } from 'fs';
 import { pr_str } from './printer.mjs';
 import { read_str } from './reader.mjs';
 import { MalFn, MalInt, MalList, MalNil, MalVector, MalTrue, MalFalse, MalString } from './types.mjs';
-import { EVAL } from './step6_file.mjs';
 
 function malBoolean(val) {
     if (val) {
