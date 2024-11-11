@@ -63,13 +63,20 @@ export const ns = {
     }),
     "read-string": new MalFn((str) => { 
         try {
+            // console.log(str.val.split(""))
             return read_str(str.val); 
         } catch(e) {
             return new MalNil();
         }
     }),
     "slurp": new MalFn((filename) => {
-        return new MalString(readFileSync(filename.val, { encoding: 'utf8', flag: 'r' }));
+        try {
+            console.log(filename)
+            return new MalString(readFileSync(filename.val, { encoding: 'utf8', flag: 'r' }));
+        } catch(e) {
+            console.log(e)
+            return new MalNil();
+        }
     }),
     "+": new MalFn((a, b) => new MalInt(a.val + b.val)),
     "-": new MalFn((a, b) => new MalInt(a.val - b.val)),

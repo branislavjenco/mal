@@ -20,10 +20,12 @@ for (const [k, v] of Object.entries(ns)) {
     repl_env.set(k, v);
 }
 
+repl_env.set("eval", new MalFn((ast) => EVAL(ast, repl_env)));
+
 rep("(def! not (fn* (a) (if a false true)))");
-rep(
-    '(def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)")))))'
-);
+// rep(
+//     '(def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)")))))'
+// );
 
 function READ(line) {
     return read_str(line);
@@ -113,8 +115,6 @@ export function EVAL(ast, env) {
                             return EVAL(ast.val[2], newEnv);
                         }),
                     };
-                } else if (isSymbol(first, "eval")) {
-                    return EVAL(ast, env);
                 } else {
                     // apply
                     try {
@@ -131,6 +131,7 @@ export function EVAL(ast, env) {
                             env = new Env(f.env, f.params, new MalList(args));
                             continue;
                         } else {
+                            // console.log(f.val, args)
                             return f.val(...args);
                         }
                     } catch (e) {
@@ -173,6 +174,7 @@ function onLine(line) {
         output = rep(line);
         console.log(output);
     } catch (e) {
+        console.log(e);
     } finally {
         rl.prompt();
     }
@@ -186,7 +188,7 @@ function onClose() {
 process.stdin.setEncoding("utf-8");
 
 fs.rmSync("./log.txt", { force: true });
-rl.setPrompt("user> ");
-rl.prompt();
 rl.on("line", onLine);
 rl.on("close", onClose);
+rl.setPrompt("user> ");
+rl.prompt();

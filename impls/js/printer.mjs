@@ -5,12 +5,14 @@ export function escape_string(str) {
     return str.replace("\\", "\\\\").replaceAll(`\"`, `\\"`);
 }
 export function pr_str(node, print_readably) {
+    // console.log("?", node)
     if (node === "EOF") {
         return node;
     }
     if (node instanceof MalInt) {
         return node.val.toString();
     } else if (node instanceof MalString) {
+            // console.log(node.val)
         if (node.val[0] === "\u029e") {
             return ":" + node.val.slice(1);
         }
@@ -33,7 +35,9 @@ export function pr_str(node, print_readably) {
         return "nil";
     } else if (node instanceof MalHashMap) {
         return "{" + node.val.map(el => pr_str(el, print_readably)).join(" ") + "}";
-    } else if (node instanceof MalFn) {
+    } else if (node instanceof MalFn || node.hasOwnProperty("fn")) {
         return "#\<function>";
+    } else {
+        return "Dunno what to do with" + JSON.stringify(node)
     }
 }
