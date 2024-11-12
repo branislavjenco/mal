@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { pr_str } from './printer.mjs';
 import { read_str } from './reader.mjs';
-import { MalFn, MalInt, MalList, MalNil, MalVector, MalTrue, MalFalse, MalString } from './types.mjs';
+import { MalAtom, MalFn, MalInt, MalList, MalNil, MalVector, MalTrue, MalFalse, MalString } from './types.mjs';
 
 function malBoolean(val) {
     if (val) {
@@ -78,6 +78,23 @@ export const ns = {
             return new MalNil();
         }
     }),
+    "atom": new MalFn((malType) => new MalAtom(malType)),
+    "atom?": new MalFn((l, ...rest) => { return malBoolean(l instanceof MalAtom) }),
+    "deref": new MalFn((malAtom) => malAtom.val),
+    "reset!": new MalFn((malAtom, malType) => {
+        malAtom.val = malType;
+        return malType;
+    }),
+    "swap!": new MalFn((malAtom, malFn, ...args)=>{
+        let res;
+        if (malFn.hasOwnProperty("fn")) { // todo this more elegant
+            res = malFn.fn.val(malAtom.val, ...args);
+        } else {
+            res = malFn.val(malAtom.val, ...args);
+        }
+        malAtom.val = res;
+        return res; 
+    }), 
     "+": new MalFn((a, b) => new MalInt(a.val + b.val)),
     "-": new MalFn((a, b) => new MalInt(a.val - b.val)),
     "*": new MalFn((a, b) => new MalInt(a.val * b.val)),

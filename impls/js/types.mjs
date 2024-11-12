@@ -9,6 +9,10 @@ export class MalType {
     constructor(val) {
         this.val = val;
     }
+}export class MalAtom extends MalType {
+    static get type() {
+        return MalAtom.prototype.constructor.name;
+    }
 }
 
 export class MalInt extends MalType {

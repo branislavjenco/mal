@@ -1,4 +1,4 @@
-import { MalList, MalString, MalInt, MalSymbol, MalVector, MalTrue, MalHashMap, MalFalse, MalNil, MalFn } from './types.mjs';
+import { MalList, MalString, MalInt, MalSymbol, MalVector, MalTrue, MalHashMap, MalFalse, MalNil, MalFn, MalAtom } from './types.mjs';
 
 
 export function escape_string(str) {
@@ -40,6 +40,8 @@ export function pr_str(node, print_readably) {
         return "{" + node.val.map(el => pr_str(el, print_readably)).join(" ") + "}";
     } else if (node instanceof MalFn || node.hasOwnProperty("fn")) {
         return "#\<function>";
+    } else if (node instanceof MalAtom) {
+        return "(atom " + pr_str(node.val, print_readably) + ")";
     } else {
         return "Dunno what to do with" + JSON.stringify(node)
     }

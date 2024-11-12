@@ -147,6 +147,10 @@ function read_form(r) {
     const token = r.peek()
     let ret = null;
     const first_char = token[0];
+    if (first_char === "@") {
+        r.next();
+        return new MalList([new MalSymbol("deref"), read_form(r)])
+    }
     if (["(", "[", "{"].includes(first_char)) {
         ret = read_list(r, first_char);
     } else {

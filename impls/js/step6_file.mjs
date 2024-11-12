@@ -15,7 +15,9 @@ import {
     MalNil,
 } from "./types.mjs";
 
-const max_iterations = 100;
+const args = process.argv.slice(2);
+
+const max_iterations = 100000;
 let iterations = 0;
 
 const repl_env = new Env(null);
@@ -24,6 +26,7 @@ for (const [k, v] of Object.entries(ns)) {
 }
 
 repl_env.set("eval", new MalFn((ast) => EVAL(ast, repl_env)));
+repl_env.set("*ARGV*", new MalList([]) )
 
 rep("(def! not (fn* (a) (if a false true)))");
 rep(
@@ -194,6 +197,14 @@ function onLine(line) {
 function onClose() {
     console.log("input has closed");
     rl.close();
+}
+
+if (args.length > 0) {
+    console.log("Running file ", args[0])
+    rep(`(load-file "${args[0]})"`);
+    repl_env.set("*ARGV*", new MalList([args.slice(1)]) )
+    console.log("Done");
+    process.exit();
 }
 
 process.stdin.setEncoding("utf-8");
