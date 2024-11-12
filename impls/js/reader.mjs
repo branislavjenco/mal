@@ -76,7 +76,7 @@ export function read_str(str) {
     if (tokens.length < 1) {
         throw new NoTokensError(); 
     }
-    console.log("t", tokens)
+    // console.log("t", tokens)
     const r = new Reader(tokens);
     try {
         return read_form(r);
@@ -100,13 +100,14 @@ function read_atom(r) {
     } else if (a[0] === ":") {
         return new MalString(a, true);
     } else if (a[0] === '"') {
-        // console.log("hey", a.split(""))
+        // console.log("hey", a)
         try {
             const res = eval(a)
-            // console.log("hey 2", res.split(""))
+            // console.log("hey 2", res)
             return new MalString(res);
         } catch(e) {
-            console.log("what", e)
+            // console.log("what", e)
+            return new MalString(a.slice(1, a.length-1));
         }
     } else {
         return new MalSymbol(a);

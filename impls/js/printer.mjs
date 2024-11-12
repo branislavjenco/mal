@@ -6,6 +6,9 @@ export function escape_string(str) {
 }
 export function pr_str(node, print_readably) {
     // console.log("?", node)
+    if (!node) {
+        return "AST undefined"
+    }
     if (node === "EOF") {
         return node;
     }

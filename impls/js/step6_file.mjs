@@ -15,6 +15,9 @@ import {
     MalNil,
 } from "./types.mjs";
 
+const max_iterations = 100;
+let iterations = 0;
+
 const repl_env = new Env(null);
 for (const [k, v] of Object.entries(ns)) {
     repl_env.set(k, v);
@@ -23,9 +26,9 @@ for (const [k, v] of Object.entries(ns)) {
 repl_env.set("eval", new MalFn((ast) => EVAL(ast, repl_env)));
 
 rep("(def! not (fn* (a) (if a false true)))");
-// rep(
-//     '(def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)")))))'
-// );
+rep(
+    '(def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)")))))'
+);
 
 function READ(line) {
     return read_str(line);
@@ -35,19 +38,20 @@ function isSymbol(node, val) {
     return node instanceof MalSymbol && node.val === val;
 }
 
-const max_iterations = 10;
-let iterations = 0;
-
 export function EVAL(ast, env) {
     while (iterations < max_iterations) {
+        // console.log(ast, env, iterations)
+        iterations = iterations + 1;
         try {
             const debug = env.get("DEBUG-EVAL");
             if (debug) {
                 console.log(`EVAL: ${pr_str(ast, true)}`);
             }
             if (ast instanceof MalSymbol) {
+                // console.log("poop")
                 const found = env.get(ast.val)
                 if (found) {
+                    // console.log("piss", found)
                     return found;
                 } else {
                     throw new KeyNotFoundError(`${ast.val} not found.`);
@@ -56,9 +60,13 @@ export function EVAL(ast, env) {
                 const first = ast.val[0];
                 if (isSymbol(first, "def!")) {
                     try {
+                        // console.log("poop")
                         const evaled = EVAL(ast.val[2], env);
-                        return env.set(ast.val[1].val, evaled);
+                        const res =env.set(ast.val[1].val, evaled); 
+                        // console.log(env)
+                        return res;
                     } catch (e) {
+                        // console.log(e)
                         throw e; 
                     }
                 } else if (
@@ -75,6 +83,7 @@ export function EVAL(ast, env) {
                     }
                     env = newEnv;
                     ast = ast.val[2];
+                    // console.log("foo", ast, env)
                     continue;
                 } else if (isSymbol(first, "do")) {
                     for (const item of ast.val.slice(1, -1)) {
@@ -122,7 +131,7 @@ export function EVAL(ast, env) {
                         const evaledList = ast.val.map((item) =>
                             EVAL(item, env)
                         );
-                        // console.log(evaledList);
+                        // console.log("after eval", evaledList);
                         const f = evaledList[0];
                         const args = evaledList.slice(1);
                         if (f.hasOwnProperty("ast")) {
@@ -145,7 +154,6 @@ export function EVAL(ast, env) {
             } else {
                 return ast;
             }
-            iterations++;
         } catch (e) {
             throw e;
         }
@@ -158,7 +166,10 @@ function PRINT(line) {
 
 function rep(line) {
     try {
-        return PRINT(EVAL(READ(line), repl_env));
+        const read = READ(line);
+        // console.log("read",read)
+        // console.log("===")
+        return PRINT(EVAL(read, repl_env));
     } catch (e) {
         return e.message;
     }

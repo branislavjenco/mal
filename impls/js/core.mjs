@@ -71,7 +71,7 @@ export const ns = {
     }),
     "slurp": new MalFn((filename) => {
         try {
-            console.log(filename)
+            // console.log(filename)
             return new MalString(readFileSync(filename.val, { encoding: 'utf8', flag: 'r' }));
         } catch(e) {
             console.log(e)

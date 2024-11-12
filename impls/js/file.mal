@@ -1,2 +1,1 @@
-(let! abc 123)
-abc
+(let* (abc 123) abc)
