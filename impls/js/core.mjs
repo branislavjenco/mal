@@ -53,6 +53,22 @@ export const ns = {
         console.log(args.map(arg => pr_str(arg, false)).join(" "));
         return new MalNil();
     }),
+    "cons": new MalFn((start, listOrVector) => {
+        // console.log("consing", start, list)
+        return new MalList([start, ...listOrVector.val])
+    }),
+    "vec": new MalFn((arg) => {
+        if (arg instanceof MalVector) {
+            return arg;
+        } else {
+            if (arg instanceof MalList) {
+                return new MalVector(arg.val);
+            } else {
+                return new MalVector([arg])
+            }
+        }
+    }),
+    "concat": new MalFn((...listsOrVectors) => new MalList(listsOrVectors.map(l => l.val).flat())),
     "empty?": new MalFn((l, ...rest) => { return malBoolean(l.val.length === 0) }),
     "count": new MalFn((l, ...rest) => { 
         if (l instanceof MalList || l instanceof MalVector) {

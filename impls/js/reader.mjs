@@ -150,7 +150,20 @@ function read_form(r) {
     if (first_char === "@") {
         r.next();
         return new MalList([new MalSymbol("deref"), read_form(r)])
+    } else if (first_char === "'") {
+        r.next();
+        return new MalList([new MalSymbol("quote"), read_form(r)])
+    } else if (first_char === "`") {
+        r.next();
+        return new MalList([new MalSymbol("quasiquote"), read_form(r)])
+    } else if (first_char === "~" && token[1] === "@") {
+        r.next();
+        return new MalList([new MalSymbol("splice-unquote"), read_form(r)])
+    } else if (first_char === "~") {
+        r.next();
+        return new MalList([new MalSymbol("unquote"), read_form(r)])
     }
+
     if (["(", "[", "{"].includes(first_char)) {
         ret = read_list(r, first_char);
     } else {
