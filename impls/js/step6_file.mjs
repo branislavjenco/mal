@@ -7,7 +7,7 @@ import fs from "fs";
 import {
     MalList,
     MalSymbol,
-    MalInt,
+    MalString,
     MalFalse,
     MalHashMap,
     MalVector,
@@ -170,7 +170,7 @@ function PRINT(line) {
 function rep(line) {
     try {
         const read = READ(line);
-        // console.log("read",read)
+        // console.log("read",line, read)
         // console.log("===")
         return PRINT(EVAL(read, repl_env));
     } catch (e) {
@@ -200,10 +200,11 @@ function onClose() {
 }
 
 if (args.length > 0) {
-    console.log("Running file ", args[0])
-    rep(`(load-file "${args[0]})"`);
-    repl_env.set("*ARGV*", new MalList([args.slice(1)]) )
-    console.log("Done");
+    // console.log("Running file ", args[0])
+    // console.log("foo",args)
+    repl_env.set("*ARGV*", new MalList(args.slice(1).map(s => new MalString(s))) )
+    rep(`(load-file "${args[0]}")`);
+    // console.log("Done", repl_env.get("*ARGV*").val);
     process.exit();
 }
 

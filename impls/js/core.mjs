@@ -45,8 +45,8 @@ export const ns = {
     "str": new MalFn((...args) => {
         return new MalString(args.map(arg => pr_str(arg, false)).join(""));
     }),
-    "prn": new MalFn((...args) => {
-        console.log(args.map(arg => pr_str(arg, true)).join(" "));
+    "prn": new MalFn((args) => {
+        console.log(pr_str(args, true));
         return new MalNil();
     }),
     "println": new MalFn((...args) => {
