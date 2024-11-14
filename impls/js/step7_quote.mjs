@@ -41,31 +41,27 @@ function isSymbol(node, val) {
     return node instanceof MalSymbol && node.val === val;
 }
 
-function quasiquote(ast) {
+function quasiquote(ast, skipUnquote = false) {
     if (ast instanceof MalList) {
         const first = ast.val[0];
-        console.log("first", first)
-        if (isSymbol(first, "unquote")) {
+        if (isSymbol(first, "unquote") && !skipUnquote) {
             return ast.val[1];
         } else {
             let res = new MalList([]);
             for (let i = ast.val.length - 1; i >= 0; i--) {
                 const elt = ast.val[i]; 
-                // console.log("ELT", elt)
                 if (elt instanceof MalList && isSymbol(elt.val[0], "splice-unquote")) {
                     res = new MalList([new MalSymbol("concat"), elt.val[1], res]);
                 } else {
                     res = new MalList([new MalSymbol("cons"), quasiquote(elt), res]);
                 }
-                // console.log(res)
             }
-            // console.log("woop", res)
             return res;
         }
     } else if (ast instanceof MalHashMap || ast instanceof MalSymbol) {
         return new MalList([new MalSymbol("quote"), ast]);
     } else if (ast instanceof MalVector) {
-        return new MalList([new MalSymbol("vec"), quasiquote(new MalList(ast.val))])
+        return new MalList([new MalSymbol("vec"), quasiquote(new MalList(ast.val), true)])
     } else {
         return ast;
     }
@@ -74,17 +70,14 @@ function quasiquote(ast) {
 
 export function EVAL(ast, env) {
     while (iterations < max_iterations) {
-        // console.log(ast, env, iterations)
         iterations = iterations + 1;
         const debug = env.get("DEBUG-EVAL");
         if (debug) {
             console.log(`EVAL: ${pr_str(ast, true)}`);
         }
         if (ast instanceof MalSymbol) {
-            // console.log("poop")
             const found = env.get(ast.val);
             if (found) {
-                // console.log("piss", found)
                 return found;
             } else {
                 throw new KeyNotFoundError(`${ast.val} not found.`);
@@ -93,13 +86,10 @@ export function EVAL(ast, env) {
             const first = ast.val[0];
             if (isSymbol(first, "def!")) {
                 try {
-                    // console.log("poop")
                     const evaled = EVAL(ast.val[2], env);
                     const res = env.set(ast.val[1].val, evaled);
-                    // console.log(env)
                     return res;
                 } catch (e) {
-                    // console.log(e)
                     throw e;
                 }
             } else if (
@@ -116,7 +106,6 @@ export function EVAL(ast, env) {
                 }
                 env = newEnv;
                 ast = ast.val[2];
-                // console.log("foo", ast, env)
                 continue;
             } else if (isSymbol(first, "do")) {
                 for (const item of ast.val.slice(1, -1)) {
@@ -164,11 +153,9 @@ export function EVAL(ast, env) {
                 continue;
             } else {
                 // apply
-                // console.log("before eval", ast.val)
                 const evaledList = ast.val.map((item) =>
                     EVAL(item, env)
                 );
-                // console.log("after eval", evaledList);
                 const f = evaledList[0];
                 const args = evaledList.slice(1);
                 if (f.hasOwnProperty("ast")) {
@@ -177,7 +164,6 @@ export function EVAL(ast, env) {
                     env = new Env(f.env, f.params, new MalList(args));
                     continue;
                 } else {
-                    // console.log(f.val, args)
                     return f.val(...args);
                 }
             }
