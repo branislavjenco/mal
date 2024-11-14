@@ -1,4 +1,4 @@
-import { MalList, MalString, MalInt, MalSymbol, MalVector, MalTrue, MalHashMap, MalFalse, MalNil, MalFn, MalAtom } from './types.mjs';
+import { MalAtom } from './types.mjs';
 
 
 export function escape_string(str) {
@@ -12,33 +12,33 @@ export function pr_str(node, print_readably) {
     if (node === "EOF") {
         return node;
     }
-    if (node instanceof MalInt) {
-        return node.val.toString();
-    } else if (node instanceof MalString) {
+    if (typeof node === 'number') {
+        return node.toString();
+    } else if (typeof node === 'string') {
             // console.log(node.val)
-        if (node.val[0] === "\u029e") {
-            return ":" + node.val.slice(1);
+        if (node[0] === "\u029e") {
+            return ":" + node.slice(1);
         }
         if (print_readably) {
-            return JSON.stringify(node.val);
+            return JSON.stringify(node);
         } else {
-            return node.val;
+            return node;
         }
-    } else if (node instanceof MalSymbol) {
-        return node.val;
-    } else if (node instanceof MalList) {
+    } else if (typeof node === 'symbol') {
+        return node.description;
+    } else if (node instanceof Array && node.type === "list") {
         return "(" + node.val.map(el => pr_str(el, print_readably)).join(" ") + ")";
-    } else if (node instanceof MalVector) {
+    } else if (node instanceof Array && node.type === "vec") {
         return "[" + node.val.map(el => pr_str(el, print_readably)).join(" ") + "]";
-    } else if (node instanceof MalTrue) {
+    } else if (typeof node === 'boolean' && node === true) {
         return "true";
-    } else if (node instanceof MalFalse) {
+    } else if (typeof node === 'boolean' && node === false) {
         return "false";
-    } else if (node instanceof MalNil) {
+    } else if (node === null) {
         return "nil";
-    } else if (node instanceof MalHashMap) {
+    } else if (node instanceof Array && node.type === "hash") {
         return "{" + node.val.map(el => pr_str(el, print_readably)).join(" ") + "}";
-    } else if (node instanceof MalFn || node.hasOwnProperty("fn")) {
+    } else if (typeof node === 'function' || node.hasOwnProperty("fn")) {
         return "#\<function>";
     } else if (node instanceof MalAtom) {
         return "(atom " + pr_str(node.val, print_readably) + ")";

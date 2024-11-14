@@ -1,4 +1,4 @@
-import { MalString, MalVector, MalList, MalInt, MalSymbol, MalNil, MalFalse, MalTrue, MalHashMap } from './types.mjs'
+// import { MalString, MalVector, MalList, MalInt, MalNil, MalFalse, MalTrue, MalHashMap } from './types.mjs'
 import fs from 'fs';
 
 const DEBUG = true;
@@ -90,27 +90,29 @@ function read_atom(r) {
     const a = r.peek();
     const asInt = parseInt(r.peek());
     if (!isNaN(asInt)) {
-        return new MalInt(asInt);
+        return asInt;
     } else if (a === "nil") {
-        return new MalNil();
+        return null;
     } else if (a === "true") {
-        return new MalTrue();
+        return true;
     } else if(a === "false") {
-        return new MalFalse();
+        return false;
     } else if (a[0] === ":") {
-        return new MalString(a, true);
+        return a;
     } else if (a[0] === '"') {
-        // console.log("hey", a)
         try {
-            const res = eval(a)
-            // console.log("hey 2", res)
-            return new MalString(res);
+            // this doesn't quite work correctly
+            const res = eval(a);
+            return res;
         } catch(e) {
-            // console.log("what", e)
-            return new MalString(a.slice(1, a.length-1));
+            if (a[a.length-1] === '"' ) {
+                return a.slice(1, a.length-1);
+            } else {
+                return "EOF";
+            }
         }
     } else {
-        return new MalSymbol(a);
+        return Symbol.for(a);
     }
 }
 
@@ -133,11 +135,14 @@ function read_list(r, delimiter) {
         res.push(read_form(r));
     }
     if (delimiter === "(") {
-        return new MalList(res);
+        res.type = "list";
+        return res;
     } else if (delimiter === "[") {
-        return new MalVector(res);
+        res.type = "vec";
+        return res;
     } else {
-        return new MalHashMap(res);
+        res.type = "hash";
+        return res;
     }
 
 }
@@ -149,19 +154,19 @@ function read_form(r) {
     const first_char = token[0];
     if (first_char === "@") {
         r.next();
-        return new MalList([new MalSymbol("deref"), read_form(r)])
+        return [Symbol.for("deref"), read_form(r)]
     } else if (first_char === "'") {
         r.next();
-        return new MalList([new MalSymbol("quote"), read_form(r)])
+        return [Symbol.for("quote"), read_form(r)]
     } else if (first_char === "`") {
         r.next();
-        return new MalList([new MalSymbol("quasiquote"), read_form(r)])
+        return [Symbol.for("quasiquote"), read_form(r)]
     } else if (first_char === "~" && token[1] === "@") {
         r.next();
-        return new MalList([new MalSymbol("splice-unquote"), read_form(r)])
+        return [Symbol.for("splice-unquote"), read_form(r)]
     } else if (first_char === "~") {
         r.next();
-        return new MalList([new MalSymbol("unquote"), read_form(r)])
+        return [Symbol.for("unquote"), read_form(r)]
     }
 
     if (["(", "[", "{"].includes(first_char)) {

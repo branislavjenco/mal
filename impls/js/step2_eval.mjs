@@ -20,7 +20,7 @@ function READ(line) {
 }
 
 function EVAL(ast, env) {
-    if (ast instanceof MalSymbol) {
+    if (typeof ast === 'symbol') {
         if (env.hasOwnProperty(ast.val)) {
             return env[ast.val];
         } else {

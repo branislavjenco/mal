@@ -6,6 +6,7 @@ import { ns } from "./core.mjs";
 import fs from "fs";
 import {
     MalList,
+    MalSymbol,
     MalString,
     MalFalse,
     MalHashMap,
@@ -31,13 +32,16 @@ rep("(def! not (fn* (a) (if a false true)))");
 rep(
     '(def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)")))))'
 );
+rep (
+    `"(defmacro! cond (fn* (& xs) (if (> (count xs) 0) (list 'if (first xs) (if (> (count xs) 1) (nth xs 1) (throw \"odd number of forms to cond\")) (cons 'cond (rest (rest xs)))))))"
+`);
 
 function READ(line) {
     return read_str(line);
 }
 
 function isSymbol(node, val) {
-    return typeof node === 'symbol' && node.description === val;
+    return node instanceof MalSymbol && node.val === val;
 }
 
 function quasiquote(ast, skipUnquote = false) {
@@ -48,19 +52,33 @@ function quasiquote(ast, skipUnquote = false) {
         } else {
             let res = new MalList([]);
             for (let i = ast.val.length - 1; i >= 0; i--) {
-                const elt = ast.val[i]; 
-                if (elt instanceof MalList && isSymbol(elt.val[0], "splice-unquote")) {
-                    res = new MalList([Symbol.for("concat"), elt.val[1], res]);
+                const elt = ast.val[i];
+                if (
+                    elt instanceof MalList &&
+                    isSymbol(elt.val[0], "splice-unquote")
+                ) {
+                    res = new MalList([
+                        new MalSymbol("concat"),
+                        elt.val[1],
+                        res,
+                    ]);
                 } else {
-                    res = new MalList([Symbol.for("cons"), quasiquote(elt), res]);
+                    res = new MalList([
+                        new MalSymbol("cons"),
+                        quasiquote(elt),
+                        res,
+                    ]);
                 }
             }
             return res;
         }
-    } else if (ast instanceof MalHashMap || typeof ast === 'symbol') {
-        return new MalList([Symbol.for("quote"), ast]);
+    } else if (ast instanceof MalHashMap || ast instanceof MalSymbol) {
+        return new MalList([new MalSymbol("quote"), ast]);
     } else if (ast instanceof MalVector) {
-        return new MalList([Symbol.for("vec"), quasiquote(new MalList(ast.val), true)])
+        return new MalList([
+            new MalSymbol("vec"),
+            quasiquote(new MalList(ast.val), true),
+        ]);
     } else {
         return ast;
     }
@@ -68,24 +86,41 @@ function quasiquote(ast, skipUnquote = false) {
 
 export function EVAL(ast, env) {
     while (iterations < max_iterations) {
+        console.log("=====")
+        console.log("AST", ast)
+        console.log("---")
+        console.log("ENV", env)
         iterations = iterations + 1;
         const debug = env.get("DEBUG-EVAL");
         if (debug) {
             console.log(`EVAL: ${pr_str(ast, true)}`);
         }
-        if (typeof ast === 'symbol') {
-            const found = env.get(ast.description);
+        if (ast instanceof MalSymbol) {
+            const found = env.get(ast.val);
             if (found) {
                 return found;
             } else {
-                throw new KeyNotFoundError(`${ast.description} not found.`);
+                throw new KeyNotFoundError(`${ast.val} not found.`);
             }
         } else if (ast instanceof MalList && ast.val.length > 0) {
             const first = ast.val[0];
             if (isSymbol(first, "def!")) {
                 try {
                     const evaled = EVAL(ast.val[2], env);
-                    const res = env.set(ast.val[1].description, evaled);
+                    const res = env.set(ast.val[1].val, evaled);
+                    return res;
+                } catch (e) {
+                    throw e;
+                }
+            } else if (isSymbol(first, "defmacro!")) {
+                try {
+                    const evaled = EVAL(ast.val[2], env);
+                    if (evaled.hasOwnProperty("fn")) {
+                        evaled.fn.is_macro = true;
+                    } else {
+                        evaled.is_macro = true;
+                    }
+                    const res = env.set(ast.val[1].val, evaled);
                     return res;
                 } catch (e) {
                     throw e;
@@ -98,7 +133,7 @@ export function EVAL(ast, env) {
                 const newEnv = new Env(env);
                 const list = ast.val[1].val;
                 for (let i = 0; i < list.length; i = i + 2) {
-                    const key = list[i].description;
+                    const key = list[i].val;
                     const val = EVAL(list[i + 1], newEnv);
                     newEnv.set(key, val);
                 }
@@ -136,11 +171,7 @@ export function EVAL(ast, env) {
                     env: env,
                     fn: new MalFn((...params) => {
                         const binds = ast.val[1];
-                        const newEnv = new Env(
-                            env,
-                            binds,
-                            new MalList(params)
-                        );
+                        const newEnv = new Env(env, binds, new MalList(params));
                         return EVAL(ast.val[2], newEnv);
                     }),
                 };
@@ -151,18 +182,28 @@ export function EVAL(ast, env) {
                 continue;
             } else {
                 // apply
-                const evaledList = ast.val.map((item) =>
-                    EVAL(item, env)
-                );
-                const f = evaledList[0];
-                const args = evaledList.slice(1);
+                let f = EVAL(ast.val[0], env);
+                let actualF = f;
                 if (f.hasOwnProperty("ast")) {
-                    // is a fn*
-                    ast = f.ast;
-                    env = new Env(f.env, f.params, new MalList(args));
+                    actualF = f.fn;
+                }
+                if (actualF.is_macro) {
+                    const newForm = actualF.val(ast.val.slice(1));
+                    ast = newForm;
                     continue;
                 } else {
-                    return f.val(...args);
+                    const evaledList = ast.val
+                        .slice(1)
+                        .map((item) => EVAL(item, env));
+                    const args = evaledList.slice(1);
+                    if (f.hasOwnProperty("ast")) {
+                        // is a fn*
+                        ast = f.ast;
+                        env = new Env(f.env, f.params, new MalList(args));
+                        continue;
+                    } else {
+                        return f.val(...args);
+                    }
                 }
             }
         } else if (ast instanceof MalVector) {
@@ -182,7 +223,7 @@ function PRINT(line) {
 function rep(line) {
     try {
         const read = READ(line);
-        console.log(read)
+        // console.log(read);
         return PRINT(EVAL(read, repl_env));
     } catch (e) {
         return e.message;

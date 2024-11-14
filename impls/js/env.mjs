@@ -1,4 +1,3 @@
-import { MalList } from "./types.mjs";
 
 export class KeyNotFoundError extends Error {
     constructor(msg) {
@@ -10,7 +9,7 @@ export class KeyNotFoundError extends Error {
 export class Env {
     outer;
     data;
-    constructor(outer, binds = new MalList([]), exprs = new MalList([])) {
+    constructor(outer, binds = [], exprs = []) {
         // console.log("binds", binds);
         // console.log("exprs", exprs)
         this.outer = outer;
@@ -18,7 +17,7 @@ export class Env {
         for (let i = 0; i < binds.val.length; i++) {
             const bind = binds.val[i].val;
             if (bind === "&") {
-                this.data[binds.val[i+1].val] = new MalList(exprs.val.slice(i));
+                this.data[binds.val[i+1].val] = exprs.val.slice(i);
                 break;
             } else {
                 this.data[bind] = exprs.val[i];

@@ -24,6 +24,8 @@ function malEqual(a, b) {
                 } else {
                     return new MalFalse();
                 }
+            } else if (typeof a === 'symbol' && typeof b === 'symbol') {
+                return malBoolean(a === b);
             } else {
                 return malBoolean(a.val === b.val);
             }
@@ -33,31 +35,31 @@ function malEqual(a, b) {
 }
 
 export const ns = {
-    "list": new MalFn((...args) => { return new MalList(args) }),
-    "list?": new MalFn((l, ...rest) => { return malBoolean(l instanceof MalList) }),
-    "prn": new MalFn((first, ...rest) => {
+    "list": (...args) => { return new MalList(args) },
+    "list?": (l, ...rest) => { return malBoolean(l instanceof MalList) },
+    "prn": (first, ...rest) => {
         console.log(pr_str(first, true));
         return new MalNil();
-    }),
-    "pr-str": new MalFn((...args) => {
+    },
+    "pr-str": (...args) => {
         return new MalString(args.map(arg => pr_str(arg, true)).join(" "));
-    }),
-    "str": new MalFn((...args) => {
+    },
+    "str": (...args) => {
         return new MalString(args.map(arg => pr_str(arg, false)).join(""));
-    }),
-    "prn": new MalFn((args) => {
+    },
+    "prn": (args) => {
         console.log(pr_str(args, true));
         return new MalNil();
-    }),
-    "println": new MalFn((...args) => {
+    },
+    "println": (...args) => {
         console.log(args.map(arg => pr_str(arg, false)).join(" "));
         return new MalNil();
-    }),
-    "cons": new MalFn((start, listOrVector) => {
+    },
+    "cons": (start, listOrVector) => {
         // console.log("consing", start, list)
         return new MalList([start, ...listOrVector.val])
-    }),
-    "vec": new MalFn((arg) => {
+    },
+    "vec": (arg) => {
         if (arg instanceof MalVector) {
             return arg;
         } else {
@@ -67,25 +69,25 @@ export const ns = {
                 return new MalVector([arg])
             }
         }
-    }),
-    "concat": new MalFn((...listsOrVectors) => new MalList(listsOrVectors.map(l => l.val).flat())),
-    "empty?": new MalFn((l, ...rest) => { return malBoolean(l.val.length === 0) }),
-    "count": new MalFn((l, ...rest) => { 
+    },
+    "concat": (...listsOrVectors) => new MalList(listsOrVectors.map(l => l.val).flat()),
+    "empty?": (l, ...rest) => malBoolean(l.val.length === 0),
+    "count": (l, ...rest) => { 
         if (l instanceof MalList || l instanceof MalVector) {
             return new MalInt(l.val.length) 
         } else {
             return new MalInt(0);
         }
-    }),
-    "read-string": new MalFn((str) => { 
+    },
+    "read-string": (str) => { 
         try {
             // console.log(str.val.split(""))
             return read_str(str.val); 
         } catch(e) {
             return new MalNil();
         }
-    }),
-    "slurp": new MalFn((filename) => {
+    },
+    "slurp": (filename) => {
         try {
             // console.log(filename)
             return new MalString(readFileSync(filename.val, { encoding: 'utf8', flag: 'r' }));
@@ -93,15 +95,15 @@ export const ns = {
             console.log(e)
             return new MalNil();
         }
-    }),
-    "atom": new MalFn((malType) => new MalAtom(malType)),
-    "atom?": new MalFn((l, ...rest) => { return malBoolean(l instanceof MalAtom) }),
-    "deref": new MalFn((malAtom) => malAtom.val),
-    "reset!": new MalFn((malAtom, malType) => {
+    },
+    "atom": (malType) => new MalAtom(malType),
+    "atom?": (l, ...rest) => { return malBoolean(l instanceof MalAtom) },
+    "deref": (malAtom) => malAtom.val,
+    "reset!": (malAtom, malType) => {
         malAtom.val = malType;
         return malType;
-    }),
-    "swap!": new MalFn((malAtom, malFn, ...args)=>{
+    },
+    "swap!": (malAtom, malFn, ...args)=>{
         let res;
         if (malFn.hasOwnProperty("fn")) { // todo this more elegant
             res = malFn.fn.val(malAtom.val, ...args);
@@ -110,24 +112,24 @@ export const ns = {
         }
         malAtom.val = res;
         return res; 
-    }), 
-    "+": new MalFn((a, b) => new MalInt(a.val + b.val)),
-    "-": new MalFn((a, b) => new MalInt(a.val - b.val)),
-    "*": new MalFn((a, b) => new MalInt(a.val * b.val)),
-    "/": new MalFn((a, b) => new MalInt(Math.floor(a.val / b.val))),
-    "=": new MalFn((a, b, ...rest) => {
+    }, 
+    "+": (a, b) => new MalInt(a.val + b.val),
+    "-": (a, b) => new MalInt(a.val - b.val),
+    "*": (a, b) => new MalInt(a.val * b.val),
+    "/": (a, b) => new MalInt(Math.floor(a.val / b.val)),
+    "=": (a, b, ...rest) => {
         return malEqual(a, b);
-    }),
-    "<": new MalFn((a, b, ...rest) => {
+    },
+    "<": (a, b, ...rest) => {
         return malBoolean(a.val < b.val);
-    }),
-    ">": new MalFn((a, b, ...rest) => {
+    },
+    ">": (a, b, ...rest) => {
         return malBoolean(a.val > b.val);
-    }),
-    "<=": new MalFn((a, b, ...rest) => {
+    },
+    "<=": (a, b, ...rest) => {
         return malBoolean(a.val <= b.val);
-    }),
-    ">=": new MalFn((a, b, ...rest) => {
+    },
+    ">=": (a, b, ...rest) => {
         return malBoolean(a.val >= b.val);
-    }),
+    },
 }
