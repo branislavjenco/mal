@@ -41,7 +41,7 @@ export const ns = {
     "concat": (...listsOrVectors) => makeList(...listsOrVectors.flat()),
     "empty?": l => l.length === 0,
     "count": l => { 
-        if (typeof l === Array) {
+        if (l instanceof Array) {
             return l.length; 
         } else {
             return 0;

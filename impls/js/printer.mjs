@@ -15,8 +15,10 @@ export function pr_str(node, print_readably) {
     if (typeof node === 'number') {
         return node.toString();
     } else if (typeof node === 'string') {
+        console.log("nooode", node)
             // console.log(node.val)
         if (node[0] === "\u029e") {
+            console.log("boni")
             return ":" + node.slice(1);
         }
         if (print_readably) {

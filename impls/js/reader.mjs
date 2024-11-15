@@ -98,7 +98,7 @@ function read_atom(r) {
     } else if(a === "false") {
         return false;
     } else if (a[0] === ":") {
-        return a;
+        return "\u029e" + a.slice(1);
     } else if (a[0] === '"') {
         try {
             // this doesn't quite work correctly

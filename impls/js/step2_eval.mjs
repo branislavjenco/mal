@@ -2,12 +2,14 @@ import readline from 'readline';
 import { read_str } from './reader.mjs';
 import { pr_str } from './printer.mjs';
 import fs from 'fs';
-import { MalList, MalSymbol, MalInt, MalHashMap, MalVector } from './types.mjs';
+import { isList, isVec, isHash, makeVec, makeList, makeHash } from './types.mjs';
 
-const repl_env = {'+': (a,b) => new MalInt(a.val+b.val),
-    '-': (a,b) => new MalInt(a.val-b.val),
-    '*': (a,b) => new MalInt(a.val*b.val),
-    '/': (a,b) => new MalInt(Math.floor(a.val/b.val))}
+const repl_env = {
+    "+": (a, b) => a + b,
+    "-": (a, b) => a - b,
+    "*": (a, b) => a * b,
+    "/": (a, b) => Math.floor(a / b),
+}
 
 class NotFoundError extends Error {
     constructor(msg) {
@@ -21,23 +23,24 @@ function READ(line) {
 
 function EVAL(ast, env) {
     if (typeof ast === 'symbol') {
-        if (env.hasOwnProperty(ast.val)) {
-            return env[ast.val];
+        if (env.hasOwnProperty(ast.description)) {
+            return env[ast.description];
         } else {
 
-            throw new NotFoundError(`${ast.val} not defined.`); 
+            throw new NotFoundError(`${ast} not defined.`); 
         }
-    } else if (ast instanceof MalList && ast.val.length > 0) { 
-        const evaledList = ast.val.map(item => EVAL(item, env))
+    } else if (isList(ast) && ast.length > 0) { 
+        const evaledList = makeList(...ast.map(item => EVAL(item, env)));
         try {
-            return evaledList[0](...evaledList.slice(1));
+            const args = makeList(...evaledList.slice(1))
+            return evaledList[0](...args);
         } catch(e) {
             console.log(e)
         }
-    } else if (ast instanceof MalVector) {
-        return new MalVector(ast.val.map(item => EVAL(item, env)))
-    } else if (ast instanceof MalHashMap) {
-        return new MalHashMap(ast.val.map(item => EVAL(item, env)))
+    } else if (isVec(ast)) {
+        return makeVec(...ast.map(item => EVAL(item, env)))
+    } else if (isHash(ast)) {
+        return makeHash(...ast.map(item => EVAL(item, env)))
     } else {
         return ast;
     }

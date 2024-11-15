@@ -65,7 +65,7 @@ export function EVAL(ast, env) {
     while (iterations < max_iterations) {
         iterations = iterations + 1;
         const debug = env.get("DEBUG-EVAL");
-        if (debug) {
+        if (debug !== undefined) {
             console.log(`EVAL: ${pr_str(ast, true)}`);
         }
         if (typeof ast === "symbol") {
