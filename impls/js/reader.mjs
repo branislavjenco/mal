@@ -1,5 +1,5 @@
-// import { MalString, MalVector, MalList, MalInt, MalNil, MalFalse, MalTrue, MalHashMap } from './types.mjs'
 import fs from 'fs';
+import { makeList } from './types.mjs';
 
 const DEBUG = true;
 const EOF = "EOF";
@@ -154,19 +154,19 @@ function read_form(r) {
     const first_char = token[0];
     if (first_char === "@") {
         r.next();
-        return [Symbol.for("deref"), read_form(r)]
+        return makeList(Symbol.for("deref"), read_form(r));
     } else if (first_char === "'") {
         r.next();
-        return [Symbol.for("quote"), read_form(r)]
+        return makeList(Symbol.for("quote"), read_form(r));
     } else if (first_char === "`") {
         r.next();
-        return [Symbol.for("quasiquote"), read_form(r)]
+        return makeList(Symbol.for("quasiquote"), read_form(r));
     } else if (first_char === "~" && token[1] === "@") {
         r.next();
-        return [Symbol.for("splice-unquote"), read_form(r)]
+        return makeList(Symbol.for("splice-unquote"), read_form(r));
     } else if (first_char === "~") {
         r.next();
-        return [Symbol.for("unquote"), read_form(r)]
+        return makeList(Symbol.for("unquote"), read_form(r));
     }
 
     if (["(", "[", "{"].includes(first_char)) {

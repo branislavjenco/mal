@@ -9,11 +9,49 @@ export class MalType {
     constructor(val) {
         this.val = val;
     }
-}export class MalAtom extends MalType {
+}
+
+export class MalAtom extends MalType {
     static get type() {
         return MalAtom.prototype.constructor.name;
     }
 }
+
+export function isList(node) {
+    return node instanceof Array && node.type === 'list'; 
+}
+
+export function isVec(node) {
+    return node instanceof Array && node.type === 'vec'; 
+}
+
+export function isHash(node) {
+    return node instanceof Array && node.type === 'hash'; 
+}
+
+export function makeList(...stuff) {
+    const res = stuff;
+    res.type = 'list';
+    return res;
+}
+
+export function makeVec(...stuff) {
+    const res = stuff;
+    res.type = 'vec';
+    return res;
+}
+
+export function makeHash(...stuff) {
+    const res = stuff;
+    res.type = 'hash';
+    return res;
+}
+
+export function isSymbol(node, val) {
+    return typeof node === 'symbol' && node.description === val;
+}
+
+
 
 // export class MalInt extends MalType {
 //     static get type() {

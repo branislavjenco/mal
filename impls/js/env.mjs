@@ -14,16 +14,15 @@ export class Env {
         // console.log("exprs", exprs)
         this.outer = outer;
         this.data = {};
-        for (let i = 0; i < binds.val.length; i++) {
-            const bind = binds.val[i].val;
+        for (let i = 0; i < binds.length; i++) {
+            const bind = binds[i];
             if (bind === "&") {
-                this.data[binds.val[i+1].val] = exprs.val.slice(i);
+                this.data[binds[i+1]] = exprs.slice(i);
                 break;
             } else {
-                this.data[bind] = exprs.val[i];
+                this.data[bind] = exprs[i];
             }
         }
-        // console.log(this.data);
     }
 
     set(key, val) {
@@ -38,7 +37,7 @@ export class Env {
             if (this.outer !== null) {
                 return this.outer.get(key);
             } else {
-                return null;
+                return undefined;
             }
         }
 
