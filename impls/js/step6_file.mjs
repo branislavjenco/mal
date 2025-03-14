@@ -29,9 +29,7 @@ repl_env.set("eval", new MalFn((ast) => EVAL(ast, repl_env)));
 repl_env.set("*ARGV*", new MalList([]) )
 
 rep("(def! not (fn* (a) (if a false true)))");
-rep(
-    '(def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)")))))'
-);
+rep(`(def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\\nnil)")))))`);
 
 function READ(line) {
     return read_str(line);
@@ -42,7 +40,8 @@ function isSymbol(node, val) {
 }
 
 export function EVAL(ast, env) {
-    while (iterations < max_iterations) {
+    let isError = false
+    while (!isError && iterations < max_iterations) {
         // console.log(ast, env, iterations)
         iterations = iterations + 1;
         try {
@@ -69,7 +68,7 @@ export function EVAL(ast, env) {
                         // console.log(env)
                         return res;
                     } catch (e) {
-                        // console.log(e)
+                        isError = true;
                         throw e; 
                     }
                 } else if (
@@ -147,7 +146,8 @@ export function EVAL(ast, env) {
                             return f.val(...args);
                         }
                     } catch (e) {
-                        console.log(e);
+                        isError = true;
+                        throw e;
                     }
                 }
             } else if (ast instanceof MalVector) {
@@ -158,6 +158,7 @@ export function EVAL(ast, env) {
                 return ast;
             }
         } catch (e) {
+            isError = true;
             throw e;
         }
     }

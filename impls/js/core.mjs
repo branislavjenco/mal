@@ -32,21 +32,20 @@ function malEqual(a, b) {
         }
 }
 
+
+
 export const ns = {
     "list": new MalFn((...args) => { return new MalList(args) }),
     "list?": new MalFn((l, ...rest) => { return malBoolean(l instanceof MalList) }),
-    "prn": new MalFn((first, ...rest) => {
-        console.log(pr_str(first, true));
-        return new MalNil();
-    }),
     "pr-str": new MalFn((...args) => {
         return new MalString(args.map(arg => pr_str(arg, true)).join(" "));
     }),
     "str": new MalFn((...args) => {
         return new MalString(args.map(arg => pr_str(arg, false)).join(""));
     }),
-    "prn": new MalFn((args) => {
-        console.log(pr_str(args, true));
+    "prn": new MalFn((...args) => {
+        const result = args.map(arg => pr_str(arg, true)).join(" ");
+        console.log(result);
         return new MalNil();
     }),
     "println": new MalFn((...args) => {

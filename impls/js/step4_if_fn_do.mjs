@@ -45,12 +45,14 @@ function EVAL(ast, env) {
                 const val = EVAL(list[i+1], newEnv);
                 newEnv.set(key, val);
             }
-            return EVAL(ast.val[2], newEnv);
+            const result = EVAL(ast.val[2], newEnv);
+            return result 
         } else if (isSymbol(first, "do")) {
             for (const item of ast.val.slice(1, -1)) {
                 EVAL(item, env);
             }
-            return EVAL(ast.val[ast.val.length - 1], env)
+            const result = EVAL(ast.val[ast.val.length - 1], env);
+            return result
         } else if (isSymbol(first, "if")) {
             const condition = EVAL(ast.val[1], env);
             const ifBranch = ast.val[2];
@@ -59,21 +61,27 @@ function EVAL(ast, env) {
                 if (elseBranch === undefined) {
                     return new MalNil(); 
                 } else {
-                    return EVAL(elseBranch, env);
+                    const result = EVAL(elseBranch, env)
+                    return result;
                 }
             } else {
-                return EVAL(ifBranch, env);
+                const result = EVAL(ifBranch, env)
+                return result;
             }
         } else if (isSymbol(first, "fn*")) {
             return new MalFn((...params) => {
                 const binds = ast.val[1];
                 const newEnv = new Env(env, binds, new MalList(params));
-                return EVAL(ast.val[2], newEnv);
+                const result = EVAL(ast.val[2], newEnv)
+                return result;
             })
         } else {
             const evaledList = ast.val.map((item) => EVAL(item, env));
             try {
-                return evaledList[0].val(...evaledList.slice(1));
+                const first = evaledList[0].val 
+                const rest = evaledList.slice(1)
+                const result = first(...rest)
+                return result;
             } catch (e) {
                 console.log(e);
             }
