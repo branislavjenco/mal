@@ -17,9 +17,6 @@ import {
 
 const args = process.argv.slice(2);
 
-const max_iterations = 1000;
-let iterations = 0;
-
 const repl_env = new Env(null);
 for (const [k, v] of Object.entries(ns)) {
     repl_env.set(k, v);
@@ -69,8 +66,8 @@ function quasiquote(ast, skipUnquote = false) {
 }
 
 export function EVAL(ast, env) {
-    while (iterations < max_iterations) {
-        iterations = iterations + 1;
+    let isError = false
+    while (!isError) {
         const debug = env.get("DEBUG-EVAL");
         if (debug) {
             console.log(`EVAL: ${pr_str(ast, true)}`);
@@ -90,6 +87,7 @@ export function EVAL(ast, env) {
                     const res = env.set(ast.val[1].val, evaled);
                     return res;
                 } catch (e) {
+                    isError = true;
                     throw e;
                 }
             } else if (
@@ -184,7 +182,7 @@ function PRINT(line) {
 function rep(line) {
     try {
         const read = READ(line);
-        console.log(read)
+        // console.log(read)
         return PRINT(EVAL(read, repl_env));
     } catch (e) {
         return e.message;
@@ -213,14 +211,11 @@ function onClose() {
 }
 
 if (args.length > 0) {
-    // console.log("Running file ", args[0])
-    // console.log("foo",args)
     repl_env.set(
         "*ARGV*",
         new MalList(args.slice(1).map((s) => new MalString(s)))
     );
     rep(`(load-file "${args[0]}")`);
-    // console.log("Done", repl_env.get("*ARGV*").val);
     process.exit();
 }
 

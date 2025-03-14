@@ -17,7 +17,6 @@ import {
 
 const args = process.argv.slice(2);
 
-const max_iterations = 100000;
 let iterations = 0;
 
 const repl_env = new Env(null);
@@ -41,9 +40,7 @@ function isSymbol(node, val) {
 
 export function EVAL(ast, env) {
     let isError = false
-    while (!isError && iterations < max_iterations) {
-        // console.log(ast, env, iterations)
-        iterations = iterations + 1;
+    while (!isError) {
         try {
             const debug = env.get("DEBUG-EVAL");
             if (debug) {
