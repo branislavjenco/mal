@@ -86,35 +86,41 @@ export function read_str(str) {
 }
 
 function read_string(str) {
-  // Handle string literals specially
-  if (str.startsWith('"') && str.endsWith('"') && str.length >= 2) {
-    // Remove the outer quotes and manually process escape sequences
-    let result = '';
-    let i = 1; // Skip the first quote
-    
-    while (i < str.length - 1) { // Stop before the last quote
-      if (str[i] === '\\') {
-        i++;
-        switch(str[i]) {
-          case 'n': result += '\n'; break;
-          case 't': result += '\t'; break;
-          case 'r': result += '\r'; break;
-          case '"': result += '"'; break;
-          case '\\': result += '\\'; break;
-          // Add other escape sequences as needed
-          default: result += str[i];
-        }
-      } else {
-        result += str[i];
-      }
-      i++;
-    }
-    
-    return result;
-  } else {
-    // For non-string expressions, continue using eval
-    throw new Error('Not a string');
+  if (str.length < 2 || str[0] !== '"' || str[str.length-1] !== '"') {
+    throw new Error("Not a valid string literal");
   }
+  
+  let result = '';
+  let state = 'NORMAL';
+  
+  for (let i = 1; i < str.length - 1; i++) {
+    const char = str[i];
+    
+    if (state === 'NORMAL') {
+      if (char === '\\') {
+        state = 'ESCAPE';
+      } else {
+        result += char;
+      }
+    } else if (state === 'ESCAPE') {
+      switch (char) {
+        case 'n': result += '\n'; break;
+        case 't': result += '\t'; break;
+        case 'r': result += '\r'; break;
+        case '"': result += '"'; break;
+        case '\\': result += '\\'; break;
+        default: result += char;
+      }
+      state = 'NORMAL';
+    }
+  }
+  
+  // Check if we ended in the ESCAPE state, which is an error
+  if (state === 'ESCAPE') {
+    throw new Error("EOF while reading string - escape sequence not completed");
+  }
+  
+  return result;
 }
 
 function read_atom(r) {
