@@ -53,7 +53,6 @@ export const ns = {
         return new MalNil();
     }),
     "cons": new MalFn((start, listOrVector) => {
-        // console.log("consing", start, list)
         return new MalList([start, ...listOrVector.val])
     }),
     "vec": new MalFn((arg) => {
@@ -66,6 +65,30 @@ export const ns = {
                 return new MalVector([arg])
             }
         }
+    }),
+    "nth": new MalFn((listOrVector, i) => {
+        if (i.val > listOrVector.val.length - 1) {
+            throw new Error("Index out of range")
+        }
+        return listOrVector.val[i.val];
+    }),
+    "first": new MalFn(l => {
+        if (l instanceof MalNil || l.val.length < 1) {
+            return new MalNil();
+        }
+        return l.val[0];
+    }),
+    "rest": new MalFn(l => {
+        if (l instanceof MalNil || l.val.length < 1) {
+            return new MalList([]);
+        }
+        return new MalList(l.val.slice(1));
+    }),
+    "macro?": new MalFn(f => {
+        if (f.isMacro) {
+            return new MalTrue();
+        }
+        return new MalFalse();
     }),
     "concat": new MalFn((...listsOrVectors) => new MalList(listsOrVectors.map(l => l.val).flat())),
     "empty?": new MalFn((l, ...rest) => { return malBoolean(l.val.length === 0) }),
