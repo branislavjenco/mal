@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { pr_str } from './printer.mjs';
 import { read_str } from './reader.mjs';
-import { MalAtom, MalFn, MalInt, MalList, MalNil, MalVector, MalTrue, MalFalse, MalString } from './types.mjs';
+import { MalAtom, MalFn, MalInt, MalList, MalNil, MalVector, MalTrue, MalFalse, MalString, MalSymbol, MalHashMap } from './types.mjs';
 
 function malBoolean(val) {
     if (val) {
@@ -133,6 +133,58 @@ export const ns = {
         malAtom.val = res;
         return res; 
     }), 
+    "throw": new MalFn((x) => { throw Error(x.val) }),
+    "apply": new MalFn((...args) => {
+        const f = args[0];
+        const listOrVector = args[args.length-1];
+        let combined = listOrVector.val;
+        if (args.length > 2) {
+            const toConcat = args.slice(1, args.length-1)
+            combined = toConcat.concat(combined)
+        }
+        if (f.hasOwnProperty("ast")) {
+            return f.fn.val(...combined)
+        } else {
+            return f.val(...combined);
+        }
+        throw Error(`Argument to apply must be list or vector, was ${listOrVector.type()}`)
+
+
+    }),
+    "map": new MalFn((f, listOrVector) => {
+        if (f.hasOwnProperty("ast")) {
+            f = f.fn
+        }
+        if (listOrVector instanceof MalList) {
+            return new MalList(listOrVector.val.map(f.val))
+        } else if (listOrVector instanceof MalVector) {
+            return new MalVector(listOrVector.val.map(f.val))
+        }
+        throw Error("Argument to map must be list or vector")
+    }),
+    "nil?": new MalFn((x) => malBoolean(x instanceof MalNil)),
+    "true?": new MalFn((x) => malBoolean(x instanceof MalTrue)),
+    "false?": new MalFn((x) => malBoolean(x instanceof MalFalse)),
+    "symbol?": new MalFn((x) => malBoolean(x instanceof MalSymbol)),
+    "symbol": new MalFn((x) => new MalSymbol(x.val)),
+    "keyword?": new MalFn((x) => malBoolean(x.val[0] === "\u029e")),
+    "keyword": new MalFn((x) => {
+        if (x.val[0] === "\u029e") {
+            return x;
+        } else {
+            return new MalString("\u029e" + x.val)
+        }
+    }),
+    "vector": new MalFn((...args) => new MalVector(args)),
+    "vector?": new MalFn((x) => malBoolean(x instanceof MalVector)),
+    "sequential?": new MalFn((x) => malBoolean(x instanceof MalVector || x instanceof MalList)),
+    "hash-map": new MalFn((...args) => {
+        return new MalHashMap(args);
+    }),
+    "map?": new MalFn((x) => malBoolean(x instanceof MalHashMap)),
+    "assoc": new MalFn((hm, ...rest) => {
+        return new MalHashMap(hm.val.concat(rest));
+    }),
     "+": new MalFn((a, b) => new MalInt(a.val + b.val)),
     "-": new MalFn((a, b) => new MalInt(a.val - b.val)),
     "*": new MalFn((a, b) => new MalInt(a.val * b.val)),
