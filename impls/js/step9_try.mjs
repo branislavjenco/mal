@@ -78,8 +78,6 @@ function quasiquote(ast, skipUnquote = false) {
 
 }
 
-let indents = 0
-
 export function EVAL(ast, env, depth=0) {
     let isError = false
     let local_depth = -1

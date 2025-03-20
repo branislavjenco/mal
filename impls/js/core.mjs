@@ -155,12 +155,7 @@ export const ns = {
         if (f.hasOwnProperty("ast")) {
             f = f.fn
         }
-        if (listOrVector instanceof MalList) {
-            return new MalList(listOrVector.val.map(f.val))
-        } else if (listOrVector instanceof MalVector) {
-            return new MalVector(listOrVector.val.map(f.val))
-        }
-        throw Error("Argument to map must be list or vector")
+        return new MalList(listOrVector.val.map(f.val))
     }),
     "nil?": new MalFn((x) => malBoolean(x instanceof MalNil)),
     "true?": new MalFn((x) => malBoolean(x instanceof MalTrue)),
@@ -185,6 +180,31 @@ export const ns = {
     "assoc": new MalFn((hm, ...rest) => {
         return new MalHashMap(hm.val.concat(rest));
     }),
+    "dissoc": new MalFn((hm, ...keys) => {
+        const result = [];
+        for (let i = 0; i < hm.val.length; i+=2) {
+            if (!keys.includes(hm.val[i])) {
+                result.push(hm.val[i]);
+                result.push(hm.val[i+1]);
+            }
+        }
+        return new MalHashMap(result);
+    }),
+    "get": new MalFn((hm, key) => {
+        if (!(hm instanceof MalHashMap)) {
+            return new MalNil();
+        }
+        const result = hm.get(key);
+        if (result === null) {
+            return new MalNil();
+        }
+        return result;
+    }),
+    "contains?": new MalFn((hm, key) => {
+        return malBoolean(hm.contains(key));
+    }),
+    "keys": new MalFn((hm) => new MalList(hm.keys)),
+    "vals": new MalFn((hm) => new MalList(hm.vals)),
     "+": new MalFn((a, b) => new MalInt(a.val + b.val)),
     "-": new MalFn((a, b) => new MalInt(a.val - b.val)),
     "*": new MalFn((a, b) => new MalInt(a.val * b.val)),
