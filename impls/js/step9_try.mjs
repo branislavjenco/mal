@@ -132,17 +132,21 @@ export function EVAL(ast, env, depth=0) {
                     return EVAL(ast.val[1], env, depth+1)
 
                 } catch (e) {
-                    if (!(e.message instanceof MalType)) {
+                    if (!(e instanceof MalType)) {
                         e = new MalString(e.message)
                     }
                     const catchList = ast.val[2]
-                    const newEnv = new Env(env);
-                    newEnv.set(catchList.val[1].val, e);
-                    env = newEnv;
-                    ast = catchList.val[2];
-                    continue;
+                    if (catchList) {
+                        const newEnv = new Env(env);
+                        newEnv.set(catchList.val[1].val, e);
+                        env = newEnv;
+                        ast = catchList.val[2];
+                        continue;
+                    }
+                    else {
+                        throw e;
+                    }
                 }
-
             } else if (
                 isSymbol(first, "let*") &&
                 (ast.val[1] instanceof MalList ||
@@ -261,7 +265,11 @@ function rep(line) {
         // console.log(read)
         return PRINT(EVAL(read, repl_env));
     } catch (e) {
-        return "Error " + e.message;
+        if (e instanceof MalType) {
+            return "Error " + pr_str(e);
+        } else {
+            return "Error " + e.message;
+        }
     }
 }
 

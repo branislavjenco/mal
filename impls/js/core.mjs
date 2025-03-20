@@ -12,24 +12,24 @@ function malBoolean(val) {
 }
 
 function malEqual(a, b) {
-        if (a.type === b.type || ([MalVector.type, MalList.type].includes(a.type) && [MalVector.type, MalList.type].includes(b.type))) {
-            if (a instanceof MalList || a instanceof MalVector) {
-                if (a.val.length === b.val.length) {
-                    for (let i = 0; i < a.val.length; i++) {
-                        if (malEqual(a.val[i], b.val[i]) instanceof MalFalse) {
-                            return new MalFalse();
-                        }
+    if (a.type === b.type || ([MalVector.type, MalList.type].includes(a.type) && [MalVector.type, MalList.type].includes(b.type))) {
+        if (a instanceof MalList || a instanceof MalVector || (a.type === b.type && a instanceof MalHashMap)) {
+            if (a.val.length === b.val.length) {
+                for (let i = 0; i < a.val.length; i++) {
+                    if (malEqual(a.val[i], b.val[i]) instanceof MalFalse) {
+                        return new MalFalse();
                     }
-                    return new MalTrue();
-                } else {
-                    return new MalFalse();
                 }
+                return new MalTrue();
             } else {
-                return malBoolean(a.val === b.val);
+                return new MalFalse();
             }
         } else {
-            return new MalFalse();
+            return malBoolean(a.val === b.val);
         }
+    } else {
+        return new MalFalse();
+    }
 }
 
 
@@ -133,7 +133,7 @@ export const ns = {
         malAtom.val = res;
         return res; 
     }), 
-    "throw": new MalFn((x) => { throw Error(x.val) }),
+    "throw": new MalFn((x) => { throw x }),
     "apply": new MalFn((...args) => {
         const f = args[0];
         const listOrVector = args[args.length-1];
@@ -178,12 +178,29 @@ export const ns = {
     }),
     "map?": new MalFn((x) => malBoolean(x instanceof MalHashMap)),
     "assoc": new MalFn((hm, ...rest) => {
-        return new MalHashMap(hm.val.concat(rest));
+        const result = [...hm.val];
+        for (let i = 0; i < rest.length; i+=2) {
+            const key = rest[i];
+            const val = rest[i+1];
+            let found = false;
+            for (let j = 0; j < result.length; j+=2) {
+                if (result[j].val === key.val) {
+                    result[j+1] = val;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                result.push(key);
+                result.push(val);
+            }
+        }
+        return new MalHashMap(result);
     }),
     "dissoc": new MalFn((hm, ...keys) => {
         const result = [];
         for (let i = 0; i < hm.val.length; i+=2) {
-            if (!keys.includes(hm.val[i])) {
+            if (!keys.map(x => x.val).includes(hm.val[i].val)) {
                 result.push(hm.val[i]);
                 result.push(hm.val[i+1]);
             }
