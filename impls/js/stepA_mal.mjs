@@ -19,22 +19,22 @@ import {
 
 const args = process.argv.slice(2);
 
+const repl_env = new Env(null);
+for (const [k, v] of Object.entries(ns)) {
+    repl_env.set(k, v);
+}
 
 
 repl_env.set("eval", new MalFn((ast) => EVAL(ast, repl_env)));
 repl_env.set("*ARGV*", new MalList([]));
 // repl_env.set("DEBUG-EVAL2", new MalTrue());
 
+rep('(def! *host-language* "js")');
 rep("(def! not (fn* (a) (if a false true)))");
 rep(
     '(def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)")))))'
 );
 rep("(defmacro! cond (fn* (& xs) (if (> (count xs) 0) (list 'if (first xs) (if (> (count xs) 1) (nth xs 1) (throw \"odd number of forms to cond\")) (cons 'cond (rest (rest xs)))))))")
-
-const repl_env = new Env(null);
-for (const [k, v] of Object.entries(ns)) {
-    repl_env.set(k, v);
-}
 
 function log(msg) {
     const debug = repl_env.get("DEBUG-EVAL2");
@@ -302,6 +302,8 @@ if (args.length > 0) {
     );
     rep(`(load-file "${args[0]}")`);
     process.exit();
+} else {
+    rep('(println (str "Mal [" *host-language* "]"))')
 }
 
 process.stdin.setEncoding("utf-8");

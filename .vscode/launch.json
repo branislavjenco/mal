@@ -1,0 +1,104 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Step 0 (REPL)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/impls/js/step0_repl.mjs",
+            "console": "integratedTerminal",
+            "skipFiles": ["<node_internals>/**"],
+            "outputCapture": "std"
+        },
+        {
+            "name": "Launch Step 1 (Read Print)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/impls/js/step1_read_print.mjs",
+            "console": "integratedTerminal",
+            "skipFiles": ["<node_internals>/**"],
+            "outputCapture": "std"
+        },
+        {
+            "name": "Launch Step 2 (Eval)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/impls/js/step2_eval.mjs",
+            "console": "integratedTerminal",
+            "skipFiles": ["<node_internals>/**"],
+            "outputCapture": "std"
+        },
+        {
+            "name": "Launch Step 3 (Env)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/impls/js/step3_env.mjs",
+            "console": "integratedTerminal",
+            "skipFiles": ["<node_internals>/**"],
+            "outputCapture": "std"
+        },
+        {
+            "name": "Launch Step 4 (If Fn Do)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/impls/js/step4_if_fn_do.mjs",
+            "console": "integratedTerminal",
+            "skipFiles": ["<node_internals>/**"],
+            "outputCapture": "std"
+        },
+        {
+            "name": "Launch Step 5 (TCO)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/impls/js/step5_tco.mjs",
+            "console": "integratedTerminal",
+            "skipFiles": ["<node_internals>/**"],
+            "outputCapture": "std"
+        },
+        {
+            "name": "Launch Step 6 (File)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/impls/js/step6_file.mjs",
+            "console": "integratedTerminal",
+            "skipFiles": ["<node_internals>/**"],
+            "outputCapture": "std"
+        },
+        {
+            "name": "Launch Step 7 (Quote)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/impls/js/step7_quote.mjs",
+            "console": "integratedTerminal",
+            "skipFiles": ["<node_internals>/**"],
+            "outputCapture": "std"
+        },
+        {
+            "name": "Launch Step 8 (Macros)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/impls/js/step8_macros.mjs",
+            "console": "integratedTerminal",
+            "skipFiles": ["<node_internals>/**"],
+            "outputCapture": "std"
+        },
+        {
+            "name": "Launch Step 9 (Try)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/impls/js/step9_try.mjs",
+            "console": "integratedTerminal",
+            "skipFiles": ["<node_internals>/**"],
+            "outputCapture": "std"
+        },
+        {
+            "name": "Launch Step A (Mal)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/impls/js/stepA_mal.mjs",
+            "console": "integratedTerminal",
+            "skipFiles": ["<node_internals>/**"],
+            "outputCapture": "std"
+        }
+    ]
+}

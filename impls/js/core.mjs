@@ -29,6 +29,7 @@ function malEqual(a, b) {
                 let sameCount = 0;
                 for (let i = 0; i < a.keys.length; i++) {
                     const k = a.keys[i];
+                    // todo this won't work for nested collections
                     const indexInB = b.keys.map(x => x.val).indexOf(k.val)
                     if (indexInB >= 0 && malEqual(b.vals[indexInB], a.vals[i]) instanceof MalTrue) {
                         sameCount++;
@@ -240,6 +241,15 @@ export const ns = {
     }),
     "keys": new MalFn((hm) => new MalList(hm.keys)),
     "vals": new MalFn((hm) => new MalList(hm.vals)),
+    "readline": new MalFn((str) => new MalList(hm.vals)),
+    "fn?": new MalFn((f) => malBoolean(f instanceof MalFn || (f.hasOwnProperty('ast') && !f.isMacro))),
+    "string?": new MalFn((s) => malBoolean(s instanceof MalString)),
+    "number?": new MalFn((s) => malBoolean(s instanceof MalInt)),
+    "seq": new MalFn((str) => new MalNil()),
+    "conj": new MalFn((str) => new MalNil()),
+    "time-ms": new MalFn((str) => new MalNil()),
+    "meta": new MalFn((str) => new MalNil()),
+    "with-meta": new MalFn((str) => new MalNil()),
     "+": new MalFn((a, b) => new MalInt(a.val + b.val)),
     "-": new MalFn((a, b) => new MalInt(a.val - b.val)),
     "*": new MalFn((a, b) => new MalInt(a.val * b.val)),
