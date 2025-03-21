@@ -13,7 +13,7 @@ function malBoolean(val) {
 
 function malEqual(a, b) {
     if (a.type === b.type || ([MalVector.type, MalList.type].includes(a.type) && [MalVector.type, MalList.type].includes(b.type))) {
-        if (a instanceof MalList || a instanceof MalVector || (a.type === b.type && a instanceof MalHashMap)) {
+        if (a instanceof MalList || a instanceof MalVector) {
             if (a.val.length === b.val.length) {
                 for (let i = 0; i < a.val.length; i++) {
                     if (malEqual(a.val[i], b.val[i]) instanceof MalFalse) {
@@ -21,6 +21,24 @@ function malEqual(a, b) {
                     }
                 }
                 return new MalTrue();
+            } else {
+                return new MalFalse();
+            }
+        } else if (a instanceof MalHashMap) {
+            if (a.val.length === b.val.length) {
+                let sameCount = 0;
+                for (let i = 0; i < a.keys.length; i++) {
+                    const k = a.keys[i];
+                    const indexInB = b.keys.map(x => x.val).indexOf(k.val)
+                    if (indexInB >= 0 && malEqual(b.vals[indexInB], a.vals[i]) instanceof MalTrue) {
+                        sameCount++;
+                    }
+                } 
+                if (sameCount === a.keys.length) {
+                    return new MalTrue();
+                } else {
+                    return new MalFalse();
+                }
             } else {
                 return new MalFalse();
             }
