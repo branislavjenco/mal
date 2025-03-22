@@ -32,11 +32,26 @@ export class MalList extends MalType {
     static get type() {
         return MalList.prototype.constructor.name;
     }
+
+    get meta() {
+        return this.meta;
+    }
+
+    set meta(malValue) {
+        this.meta = malValue;
+    }
 }
 
 export class MalVector extends MalType {
     static get type() {
         return MalVector.prototype.constructor.name;
+    }
+    get meta() {
+        return this.meta;
+    }
+
+    set meta(malValue) {
+        this.meta = malValue;
     }
 }
 export class MalHashMap extends MalType {
@@ -50,6 +65,14 @@ export class MalHashMap extends MalType {
 
     get vals() {
         return this.val.filter((_, i) => i % 2 === 1);
+    }
+
+    get meta() {
+        return this.meta;
+    }
+
+    set meta(malValue) {
+        this.meta = malValue;
     }
 
 
@@ -69,6 +92,15 @@ export class MalFn extends MalType {
     static get type() {
         return MalFn.prototype.constructor.name;
     }
+
+    get meta() {
+        return this.meta;
+    }
+
+    set meta(malValue) {
+        this.meta = malValue;
+    }
+
 
 }
 export class MalString extends MalType {
