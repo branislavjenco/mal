@@ -2,7 +2,7 @@ import readline from 'readline';
 import { read_str } from './reader.mjs';
 import { pr_str } from './printer.mjs';
 import fs from 'fs';
-import { MalList, MalSymbol, MalInt, MalHashMap, MalVector } from './types.mjs';
+import { isList, MalSymbol, MalInt, MalHashMap, MalVector } from './types.mjs';
 
 const repl_env = {'+': (a,b) => new MalInt(a.val+b.val),
     '-': (a,b) => new MalInt(a.val-b.val),
@@ -27,7 +27,7 @@ function EVAL(ast, env) {
 
             throw new NotFoundError(`${ast.val} not defined.`); 
         }
-    } else if (ast instanceof MalList && ast.val.length > 0) { 
+    } else if (isList(ast) && ast.val.length > 0) { 
         const evaledList = ast.val.map(item => EVAL(item, env))
         try {
             return evaledList[0](...evaledList.slice(1));

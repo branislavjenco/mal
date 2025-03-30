@@ -6,6 +6,7 @@ import { ns } from "./core.mjs";
 import fs from "fs";
 import {
     MalList,
+    isList,
     MalSymbol,
     MalInt,
     MalFalse,
@@ -43,13 +44,13 @@ function EVAL(ast, env) {
             } else {
                 throw new KeyNotFoundError(`${ast.val} not found.`);
             }
-        } else if (ast instanceof MalList && ast.val.length > 0) {
+        } else if (isList(ast) && ast.val.length > 0) {
             const first = ast.val[0];
             if (isSymbol(first, "def!")) {
                 return env.set(ast.val[1].val, EVAL(ast.val[2], env));
             } else if (
                 isSymbol(first, "let*") &&
-                (ast.val[1] instanceof MalList ||
+                (isList(ast.val[1]) ||
                     ast.val[1] instanceof MalVector)
             ) {
                 const newEnv = new Env(env);

@@ -1,3 +1,4 @@
+
 export class MalType {
     static get type() {
         return MalType.prototype.constructor.name;
@@ -10,10 +11,19 @@ export class MalType {
         this.val = val;
     }
 }
+
+export function isAtom(val) {
+    return val instanceof MalAtom;
+}
+
 export class MalAtom extends MalType {
     static get type() {
         return MalAtom.prototype.constructor.name;
     }
+}
+
+export function isInt(val) {
+    return val instanceof MalInt;
 }
 
 export class MalInt extends MalType {
@@ -22,10 +32,18 @@ export class MalInt extends MalType {
     }
 }
 
+export function isSymbol(val) {
+    return val instanceof MalSymbol;
+}
+
 export class MalSymbol extends MalType {
     static get type() {
         return MalSymbol.prototype.constructor.name;
     }
+}
+
+export function isList(val) {
+    return val instanceof MalList;
 }
 
 export class MalList extends MalType {
@@ -42,6 +60,10 @@ export class MalList extends MalType {
     }
 }
 
+export function isVector(val) {
+    return val instanceof MalVector;
+}
+
 export class MalVector extends MalType {
     static get type() {
         return MalVector.prototype.constructor.name;
@@ -54,6 +76,11 @@ export class MalVector extends MalType {
         this.meta = malValue;
     }
 }
+
+export function isHashMap(val) {
+    return val instanceof MalHashMap;
+}
+
 export class MalHashMap extends MalType {
     static get type() {
         return MalHashMap.prototype.constructor.name;
@@ -88,6 +115,11 @@ export class MalHashMap extends MalType {
         }
     }
 }
+
+export function isFn(val) {
+    return val instanceof MalFn || val.hasOwnProperty("fn");
+}
+
 export class MalFn extends MalType {
     static get type() {
         return MalFn.prototype.constructor.name;
@@ -100,9 +132,12 @@ export class MalFn extends MalType {
     set meta(malValue) {
         this.meta = malValue;
     }
-
-
 }
+
+export function isString(val) {
+    return val instanceof MalString;
+}
+
 export class MalString extends MalType {
     static get type() {
         return MalString.prototype.constructor.name;
@@ -116,6 +151,10 @@ export class MalString extends MalType {
     }
 }
 
+export function isTrue(val) {
+    return val instanceof MalTrue;
+}
+
 export class MalTrue extends MalType {
     static get type() {
         return MalTrue.prototype.constructor.name;
@@ -125,6 +164,10 @@ export class MalTrue extends MalType {
     }
 }
 
+export function isFalse(val) {
+    return val instanceof MalFalse;
+}
+
 export class MalFalse extends MalType {
     static get type() {
         return MalFalse.prototype.constructor.name;
@@ -132,6 +175,10 @@ export class MalFalse extends MalType {
     constructor() {
         super(false);
     }
+}
+
+export function isNil(val) {
+    return val instanceof MalNil;
 }
 
 export class MalNil extends MalType {

@@ -1,19 +1,19 @@
-import readline from "readline";
-import { read_str } from "./reader.mjs";
-import { pr_str } from "./printer.mjs";
-import { Env, KeyNotFoundError } from "./env.mjs";
-import { ns } from "./core.mjs";
 import fs from "fs";
+import readline from "readline";
+import { ns } from "./core.mjs";
+import { Env, KeyNotFoundError } from "./env.mjs";
+import { pr_str } from "./printer.mjs";
+import { read_str } from "./reader.mjs";
 import {
-    MalList,
-    MalSymbol,
-    MalString,
+    isList,
     MalFalse,
-    MalTrue,
-    MalHashMap,
-    MalVector,
     MalFn,
+    MalHashMap,
+    MalList,
     MalNil,
+    MalString,
+    MalSymbol,
+    MalVector
 } from "./types.mjs";
 
 const args = process.argv.slice(2);
@@ -51,7 +51,7 @@ function isSymbol(node, val) {
 }
 
 function quasiquote(ast, skipUnquote = false) {
-    if (ast instanceof MalList) {
+    if (isList(ast)) {
         const first = ast.val[0];
         if (isSymbol(first, "unquote") && !skipUnquote) {
             return ast.val[1];
@@ -59,7 +59,7 @@ function quasiquote(ast, skipUnquote = false) {
             let res = new MalList([]);
             for (let i = ast.val.length - 1; i >= 0; i--) {
                 const elt = ast.val[i]; 
-                if (elt instanceof MalList && isSymbol(elt.val[0], "splice-unquote")) {
+                if (isList(elt) && isSymbol(elt.val[0], "splice-unquote")) {
                     res = new MalList([new MalSymbol("concat"), elt.val[1], res]);
                 } else {
                     res = new MalList([new MalSymbol("cons"), quasiquote(elt), res]);
@@ -100,7 +100,7 @@ export function EVAL(ast, env, depth=0) {
             } else {
                 throw new KeyNotFoundError(`${ast.val} not found.`);
             }
-        } else if (ast instanceof MalList && ast.val.length > 0) {
+        } else if (isList(ast) && ast.val.length > 0) {
             log(`${indent}EVAL list`)
             const first = ast.val[0];
             if (isSymbol(first, "def!")) {
@@ -128,7 +128,7 @@ export function EVAL(ast, env, depth=0) {
                 }
             } else if (
                 isSymbol(first, "let*") &&
-                (ast.val[1] instanceof MalList ||
+                (isList(ast.val[1]) ||
                     ast.val[1] instanceof MalVector)
             ) {
                 log(`${indent}EVAL Special form let*`)

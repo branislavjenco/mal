@@ -4,7 +4,7 @@ import { pr_str } from './printer.mjs';
 import { Env, KeyNotFoundError } from './env.mjs';
 import { ns } from './core.mjs';
 import fs from 'fs';
-import { MalList, MalSymbol, MalInt, MalFalse, MalHashMap, MalVector, MalFn, MalNil } from './types.mjs';
+import { isList, MalList, MalSymbol, MalInt, MalFalse, MalHashMap, MalVector, MalFn, MalNil } from './types.mjs';
 
 const repl_env = new Env(null)
 for (const [k, v] of Object.entries(ns)) {
@@ -33,11 +33,11 @@ function EVAL(ast, env) {
         } else {
             throw new KeyNotFoundError(`${ast.val} not found.`);
         }
-    } else if (ast instanceof MalList && ast.val.length > 0) {
+    } else if (isList(ast) && ast.val.length > 0) {
         const first = ast.val[0];
         if (isSymbol(first, "def!")) {
             return env.set(ast.val[1].val, EVAL(ast.val[2], env));
-        } else if (isSymbol(first, "let*") && (ast.val[1] instanceof MalList || ast.val[1] instanceof MalVector)) { 
+        } else if (isSymbol(first, "let*") && (isList(ast.val[1]) || ast.val[1] instanceof MalVector)) { 
             const newEnv = new Env(env);
             const list = ast.val[1].val;
             for (let i = 0; i < list.length; i = i + 2) {

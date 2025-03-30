@@ -1,4 +1,4 @@
-import { MalList, MalString, MalInt, MalSymbol, MalVector, MalTrue, MalHashMap, MalFalse, MalNil, MalFn, MalAtom } from './types.mjs';
+import { isInt, isString, isSymbol, isList, isVector, isTrue, isFalse, isNil, isHashMap, isFn, isAtom } from './types.mjs';
 
 
 export function escape_string(str) {
@@ -12,10 +12,9 @@ export function pr_str(node, print_readably) {
     if (node === "EOF") {
         return node;
     }
-    if (node instanceof MalInt) {
+    if (isInt(node)) {
         return node.val.toString();
-    } else if (node instanceof MalString) {
-            // console.log(node.val)
+    } else if (isString(node)) {
         if (node.val[0] === "\u029e") {
             return ":" + node.val.slice(1);
         }
@@ -24,25 +23,25 @@ export function pr_str(node, print_readably) {
         } else {
             return node.val;
         }
-    } else if (node instanceof MalSymbol) {
+    } else if (isSymbol(node)) {
         return node.val;
-    } else if (node instanceof MalList) {
+    } else if (isList(node)) {
         return "(" + node.val.map(el => pr_str(el, print_readably)).join(" ") + ")";
-    } else if (node instanceof MalVector) {
+    } else if (isVector(node)) {
         return "[" + node.val.map(el => pr_str(el, print_readably)).join(" ") + "]";
-    } else if (node instanceof MalTrue) {
+    } else if (isTrue(node)) {
         return "true";
-    } else if (node instanceof MalFalse) {
+    } else if (isFalse(node)) {
         return "false";
-    } else if (node instanceof MalNil) {
+    } else if (isNil(node)) {
         return "nil";
-    } else if (node instanceof MalHashMap) {
+    } else if (isHashMap(node)) {
         return "{" + node.val.map(el => pr_str(el, print_readably)).join(" ") + "}";
-    } else if (node instanceof MalFn || node.hasOwnProperty("fn")) {
+    } else if (isFn(node)) {
         return "#\<function>";
-    } else if (node instanceof MalAtom) {
+    } else if (isAtom(node)) {
         return "(atom " + pr_str(node.val, print_readably) + ")";
     } else {
-        return "Dunno what to do with" + JSON.stringify(node)
+        return "Unknown AST node: " + JSON.stringify(node)
     }
 }

@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { pr_str } from './printer.mjs';
 import { read_str } from './reader.mjs';
-import { MalAtom, MalFn, MalInt, MalList, MalNil, MalVector, MalTrue, MalFalse, MalString, MalSymbol, MalHashMap } from './types.mjs';
+import { isList, isInt, MalAtom, MalFn, MalInt, MalList, MalNil, MalVector, MalTrue, MalFalse, MalString, MalSymbol, MalHashMap } from './types.mjs';
 
 function malBoolean(val) {
     if (val) {
@@ -13,7 +13,7 @@ function malBoolean(val) {
 
 function malEqual(a, b) {
     if (a.type === b.type || ([MalVector.type, MalList.type].includes(a.type) && [MalVector.type, MalList.type].includes(b.type))) {
-        if (a instanceof MalList || a instanceof MalVector) {
+        if (isList(a) || a instanceof MalVector) {
             if (a.val.length === b.val.length) {
                 for (let i = 0; i < a.val.length; i++) {
                     if (malEqual(a.val[i], b.val[i]) instanceof MalFalse) {
@@ -55,7 +55,7 @@ function malEqual(a, b) {
 
 export const ns = {
     "list": new MalFn((...args) => { return new MalList(args) }),
-    "list?": new MalFn((l, ...rest) => { return malBoolean(l instanceof MalList) }),
+    "list?": new MalFn((l, ...rest) => { return malBoolean(isList(l)) }),
     "pr-str": new MalFn((...args) => {
         return new MalString(args.map(arg => pr_str(arg, true)).join(" "));
     }),
@@ -78,7 +78,7 @@ export const ns = {
         if (arg instanceof MalVector) {
             return arg;
         } else {
-            if (arg instanceof MalList) {
+            if (isList(arg)) {
                 return new MalVector(arg.val);
             } else {
                 return new MalVector([arg])
@@ -112,7 +112,7 @@ export const ns = {
     "concat": new MalFn((...listsOrVectors) => new MalList(listsOrVectors.map(l => l.val).flat())),
     "empty?": new MalFn((l, ...rest) => { return malBoolean(l.val.length === 0) }),
     "count": new MalFn((l, ...rest) => { 
-        if (l instanceof MalList || l instanceof MalVector) {
+        if (isList(l) || l instanceof MalVector) {
             return new MalInt(l.val.length) 
         } else {
             return new MalInt(0);
@@ -191,7 +191,7 @@ export const ns = {
     }),
     "vector": new MalFn((...args) => new MalVector(args)),
     "vector?": new MalFn((x) => malBoolean(x instanceof MalVector)),
-    "sequential?": new MalFn((x) => malBoolean(x instanceof MalVector || x instanceof MalList)),
+    "sequential?": new MalFn((x) => malBoolean(x instanceof MalVector || isList(x))),
     "hash-map": new MalFn((...args) => {
         return new MalHashMap(args);
     }),
@@ -243,13 +243,16 @@ export const ns = {
     "vals": new MalFn((hm) => new MalList(hm.vals)),
     "readline": new MalFn((str) => new MalList(hm.vals)),
     "fn?": new MalFn((f) => malBoolean(f instanceof MalFn || (f.hasOwnProperty('ast') && !f.isMacro))),
-    "string?": new MalFn((s) => malBoolean(s instanceof MalString)),
-    "number?": new MalFn((s) => malBoolean(s instanceof MalInt)),
+    "string?": new MalFn((s) => malBoolean(isString(s))),
+    "number?": new MalFn((s) => malBoolean(isInt(s))),
     "seq": new MalFn((str) => new MalNil()),
     "conj": new MalFn((str) => new MalNil()),
     "time-ms": new MalFn((str) => new MalNil()),
-    "meta": new MalFn((str) => new MalNil()),
-    "with-meta": new MalFn((str) => new MalNil()),
+    "meta": new MalFn((malVal) => malVal.meta),
+    "with-meta": new MalFn((malVal, meta) => {
+        malVal.meta = meta;
+        return malVal;
+    }),
     "+": new MalFn((a, b) => new MalInt(a.val + b.val)),
     "-": new MalFn((a, b) => new MalInt(a.val - b.val)),
     "*": new MalFn((a, b) => new MalInt(a.val * b.val)),
