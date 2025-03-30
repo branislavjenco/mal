@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { pr_str } from './printer.mjs';
 import { read_str } from './reader.mjs';
-import { isList, isInt, isVector, isHashMap,MalAtom, MalFn, MalInt, MalList, MalNil, MalVector, MalTrue, MalFalse, MalString, MalSymbol, MalHashMap } from './types.mjs';
+import { isList, isInt, isVector, isHashMap,MalAtom, MalFn, MalInt, MalList, MalNil, MalVector, MalTrue, MalFalse, MalString, MalSymbol, MalHashMap, isFalse, isTrue, isNil, isAtom, isSymbol } from './types.mjs';
 
 function malBoolean(val) {
     if (val) {
@@ -16,7 +16,7 @@ function malEqual(a, b) {
         if (isList(a) || isVector(a)) {
             if (a.val.length === b.val.length) {
                 for (let i = 0; i < a.val.length; i++) {
-                    if (malEqual(a.val[i], b.val[i]) instanceof MalFalse) {
+                    if (isFalse(malEqual(a.val[i], b.val[i]))) {
                         return new MalFalse();
                     }
                 }
@@ -31,7 +31,7 @@ function malEqual(a, b) {
                     const k = a.keys[i];
                     // todo this won't work for nested collections
                     const indexInB = b.keys.map(x => x.val).indexOf(k.val)
-                    if (indexInB >= 0 && malEqual(b.vals[indexInB], a.vals[i]) instanceof MalTrue) {
+                    if (indexInB >= 0 && isTrue(malEqual(b.vals[indexInB], a.vals[i]))) {
                         sameCount++;
                     }
                 } 
@@ -92,13 +92,13 @@ export const ns = {
         return listOrVector.val[i.val];
     }),
     "first": new MalFn(l => {
-        if (l instanceof MalNil || l.val.length < 1) {
+        if (isNil(l) || l.val.length < 1) {
             return new MalNil();
         }
         return l.val[0];
     }),
     "rest": new MalFn(l => {
-        if (l instanceof MalNil || l.val.length < 1) {
+        if (isNil(l) || l.val.length < 1) {
             return new MalList([]);
         }
         return new MalList(l.val.slice(1));
@@ -136,7 +136,7 @@ export const ns = {
         }
     }),
     "atom": new MalFn((malType) => new MalAtom(malType)),
-    "atom?": new MalFn((l, ...rest) => { return malBoolean(l instanceof MalAtom) }),
+    "atom?": new MalFn((l, ...rest) => { return malBoolean(isAtom(l)) }),
     "deref": new MalFn((malAtom) => malAtom.val),
     "reset!": new MalFn((malAtom, malType) => {
         malAtom.val = malType;
@@ -176,10 +176,10 @@ export const ns = {
         }
         return new MalList(listOrVector.val.map(f.val))
     }),
-    "nil?": new MalFn((x) => malBoolean(x instanceof MalNil)),
-    "true?": new MalFn((x) => malBoolean(x instanceof MalTrue)),
-    "false?": new MalFn((x) => malBoolean(x instanceof MalFalse)),
-    "symbol?": new MalFn((x) => malBoolean(x instanceof MalSymbol)),
+    "nil?": new MalFn((x) => malBoolean(isNil(x))),
+    "true?": new MalFn((x) => malBoolean(isTrue(x))),
+    "false?": new MalFn((x) => malBoolean(isFalse(x))),
+    "symbol?": new MalFn((x) => malBoolean(isSymbol(x))),
     "symbol": new MalFn((x) => new MalSymbol(x.val)),
     "keyword?": new MalFn((x) => malBoolean(x.val[0] === "\u029e")),
     "keyword": new MalFn((x) => {
