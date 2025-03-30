@@ -5,7 +5,7 @@ import { Env, KeyNotFoundError } from "./env.mjs";
 import { pr_str } from "./printer.mjs";
 import { read_str } from "./reader.mjs";
 import {
-    isList,
+    isList,isVector, isHashMap,
     MalFalse,
     MalFn,
     MalHashMap,
@@ -56,9 +56,9 @@ function quasiquote(ast, skipUnquote = false) {
             }
             return res;
         }
-    } else if (ast instanceof MalHashMap || ast instanceof MalSymbol) {
+    } else if (isHashMap(ast) || ast instanceof MalSymbol) {
         return new MalList([new MalSymbol("quote"), ast]);
-    } else if (ast instanceof MalVector) {
+    } else if (isVector(ast)) {
         return new MalList([new MalSymbol("vec"), quasiquote(new MalList(ast.val), true)])
     } else {
         return ast;
@@ -94,7 +94,7 @@ export function EVAL(ast, env) {
             } else if (
                 isSymbol(first, "let*") &&
                 (isList(ast.val[1]) ||
-                    ast.val[1] instanceof MalVector)
+                    isVector(ast.val[1]))
             ) {
                 const newEnv = new Env(env);
                 const list = ast.val[1].val;
@@ -166,9 +166,9 @@ export function EVAL(ast, env) {
                     return f.val(...args);
                 }
             }
-        } else if (ast instanceof MalVector) {
+        } else if (isVector(ast)) {
             return new MalVector(ast.val.map((item) => EVAL(item, env)));
-        } else if (ast instanceof MalHashMap) {
+        } else if (isHashMap(ast)) {
             return new MalHashMap(ast.val.map((item) => EVAL(item, env)));
         } else {
             return ast;

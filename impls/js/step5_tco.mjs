@@ -6,7 +6,7 @@ import { ns } from "./core.mjs";
 import fs from "fs";
 import {
     MalList,
-    isList,
+    isList,isVector, isHashMap,
     MalSymbol,
     MalInt,
     MalFalse,
@@ -51,7 +51,7 @@ function EVAL(ast, env) {
             } else if (
                 isSymbol(first, "let*") &&
                 (isList(ast.val[1]) ||
-                    ast.val[1] instanceof MalVector)
+                    isVector(ast.val[1]))
             ) {
                 const newEnv = new Env(env);
                 const list = ast.val[1].val;
@@ -118,9 +118,9 @@ function EVAL(ast, env) {
                     console.log(e);
                 }
             }
-        } else if (ast instanceof MalVector) {
+        } else if (isVector(ast)) {
             return new MalVector(ast.val.map((item) => EVAL(item, env)));
-        } else if (ast instanceof MalHashMap) {
+        } else if (isHashMap(ast)) {
             return new MalHashMap(ast.val.map((item) => EVAL(item, env)));
         } else {
             return ast;

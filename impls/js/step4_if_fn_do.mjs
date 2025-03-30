@@ -4,7 +4,7 @@ import { pr_str } from './printer.mjs';
 import { Env, KeyNotFoundError } from './env.mjs';
 import { ns } from './core.mjs';
 import fs from 'fs';
-import { isList, MalList, MalSymbol, MalInt, MalFalse, MalHashMap, MalVector, MalFn, MalNil } from './types.mjs';
+import { isList,isVector, isHashMap, MalList, MalSymbol, MalInt, MalFalse, MalHashMap, MalVector, MalFn, MalNil } from './types.mjs';
 
 const repl_env = new Env(null)
 for (const [k, v] of Object.entries(ns)) {
@@ -37,7 +37,7 @@ function EVAL(ast, env) {
         const first = ast.val[0];
         if (isSymbol(first, "def!")) {
             return env.set(ast.val[1].val, EVAL(ast.val[2], env));
-        } else if (isSymbol(first, "let*") && (isList(ast.val[1]) || ast.val[1] instanceof MalVector)) { 
+        } else if (isSymbol(first, "let*") && (isList(ast.val[1]) || isVector(ast.val[1]))) { 
             const newEnv = new Env(env);
             const list = ast.val[1].val;
             for (let i = 0; i < list.length; i = i + 2) {
@@ -86,9 +86,9 @@ function EVAL(ast, env) {
                 console.log(e);
             }
         }
-    } else if (ast instanceof MalVector) {
+    } else if (isVector(ast)) {
         return new MalVector(ast.val.map((item) => EVAL(item, env)));
-    } else if (ast instanceof MalHashMap) {
+    } else if (isHashMap(ast)) {
         return new MalHashMap(ast.val.map((item) => EVAL(item, env)));
     } else {
         return ast;

@@ -5,7 +5,7 @@ import { Env, KeyNotFoundError } from "./env.mjs";
 import { ns } from "./core.mjs";
 import fs from "fs";
 import {
-    isList,
+    isList,isVector, isHashMap,
     MalList,
     MalSymbol,
     MalString,
@@ -49,20 +49,20 @@ function READ(line) {
     return read_str(line);
 }
 
-function isSymbol(node, val) {
+function isSymbolWithValue(node, val) {
     return node instanceof MalSymbol && node.val === val;
 }
 
 function quasiquote(ast, skipUnquote = false) {
     if (isList(ast)) {
         const first = ast.val[0];
-        if (isSymbol(first, "unquote") && !skipUnquote) {
+        if (isSymbolWithValue(first, "unquote") && !skipUnquote) {
             return ast.val[1];
         } else {
             let res = new MalList([]);
             for (let i = ast.val.length - 1; i >= 0; i--) {
                 const elt = ast.val[i]; 
-                if (isList(elt) && isSymbol(elt.val[0], "splice-unquote")) {
+                if (isList(elt) && isSymbolWithValue(elt.val[0], "splice-unquote")) {
                     res = new MalList([new MalSymbol("concat"), elt.val[1], res]);
                 } else {
                     res = new MalList([new MalSymbol("cons"), quasiquote(elt), res]);
@@ -70,9 +70,9 @@ function quasiquote(ast, skipUnquote = false) {
             }
             return res;
         }
-    } else if (ast instanceof MalHashMap || ast instanceof MalSymbol) {
+    } else if (isHashMap(ast) || ast instanceof MalSymbol) {
         return new MalList([new MalSymbol("quote"), ast]);
-    } else if (ast instanceof MalVector) {
+    } else if (isVector(ast)) {
         return new MalList([new MalSymbol("vec"), quasiquote(new MalList(ast.val), true)])
     } else {
         return ast;
@@ -104,7 +104,7 @@ export function EVAL(ast, env, depth=0) {
         } else if (isList(ast) && ast.val.length > 0) {
             log(`${indent}EVAL list`)
             const first = ast.val[0];
-            if (isSymbol(first, "def!")) {
+            if (isSymbolWithValue(first, "def!")) {
                 log(`${indent}EVAL Special form def!`)
                 try {
                     const evaled = EVAL(ast.val[2], env, depth+1);
@@ -114,7 +114,7 @@ export function EVAL(ast, env, depth=0) {
                     isError = true;
                     throw e;
                 }
-            } else if (isSymbol(first, "defmacro!")) {
+            } else if (isSymbolWithValue(first, "defmacro!")) {
                 log(`${indent}EVAL Special form defmacro!`)
                 try {
                     const evaled = EVAL(ast.val[2], env, depth+1);
@@ -128,7 +128,7 @@ export function EVAL(ast, env, depth=0) {
                     throw e;
                 }
             } else if (
-                isSymbol(first, "try*")
+                isSymbolWithValue(first, "try*")
             ) {
                 try {
                     return EVAL(ast.val[1], env, depth+1)
@@ -150,9 +150,9 @@ export function EVAL(ast, env, depth=0) {
                     }
                 }
             } else if (
-                isSymbol(first, "let*") &&
+                isSymbolWithValue(first, "let*") &&
                 (isList(ast.val[1]) ||
-                    ast.val[1] instanceof MalVector)
+                    isVector(ast.val[1]))
             ) {
                 log(`${indent}EVAL Special form let*`)
                 const newEnv = new Env(env);
@@ -165,14 +165,14 @@ export function EVAL(ast, env, depth=0) {
                 env = newEnv;
                 ast = ast.val[2];
                 continue;
-            } else if (isSymbol(first, "do")) {
+            } else if (isSymbolWithValue(first, "do")) {
                 log(`${indent}EVAL Special form do`)
                 for (const item of ast.val.slice(1, -1)) {
                     EVAL(item, env, depth+1);
                 }
                 ast = ast.val[ast.val.length - 1];
                 continue;
-            } else if (isSymbol(first, "if")) {
+            } else if (isSymbolWithValue(first, "if")) {
                 log(`${indent}EVAL Special form if`)
                 const condition = EVAL(ast.val[1], env, depth+1);
                 const ifBranch = ast.val[2];
@@ -193,7 +193,7 @@ export function EVAL(ast, env, depth=0) {
                     ast = ifBranch;
                     continue;
                 }
-            } else if (isSymbol(first, "fn*")) {
+            } else if (isSymbolWithValue(first, "fn*")) {
                 log(`${indent}EVAL Special form fn*`)
                 return {
                     ast: ast.val[2],
@@ -210,10 +210,10 @@ export function EVAL(ast, env, depth=0) {
                         return EVAL(ast.val[2], newEnv, depth+1);
                     }),
                 };
-            } else if (isSymbol(first, "quote")) {
+            } else if (isSymbolWithValue(first, "quote")) {
                 log(`${indent}EVAL Special form quote`)
                 return ast.val[1];
-            } else if (isSymbol(first, "quasiquote")) {
+            } else if (isSymbolWithValue(first, "quasiquote")) {
                 log(`${indent}EVAL Special form quasiquote`)
                 ast = quasiquote(ast.val[1]);
                 continue;
@@ -244,10 +244,10 @@ export function EVAL(ast, env, depth=0) {
                     }
                 }
             }
-        } else if (ast instanceof MalVector) {
+        } else if (isVector(ast)) {
             log(`${indent}EVAL vector`)
             return new MalVector(ast.val.map((item) => EVAL(item, env, depth+1)));
-        } else if (ast instanceof MalHashMap) {
+        } else if (isHashMap(ast)) {
             log(`${indent}EVAL hashmap`)
             return new MalHashMap(ast.val.map((item) => EVAL(item, env, depth+1)));
         } else {

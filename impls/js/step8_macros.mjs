@@ -5,7 +5,7 @@ import { Env, KeyNotFoundError } from "./env.mjs";
 import { pr_str } from "./printer.mjs";
 import { read_str } from "./reader.mjs";
 import {
-    isList,
+    isList,isVector, isHashMap,
     MalFalse,
     MalFn,
     MalHashMap,
@@ -67,9 +67,9 @@ function quasiquote(ast, skipUnquote = false) {
             }
             return res;
         }
-    } else if (ast instanceof MalHashMap || ast instanceof MalSymbol) {
+    } else if (isHashMap(ast) || ast instanceof MalSymbol) {
         return new MalList([new MalSymbol("quote"), ast]);
-    } else if (ast instanceof MalVector) {
+    } else if (isVector(ast)) {
         return new MalList([new MalSymbol("vec"), quasiquote(new MalList(ast.val), true)])
     } else {
         return ast;
@@ -129,7 +129,7 @@ export function EVAL(ast, env, depth=0) {
             } else if (
                 isSymbol(first, "let*") &&
                 (isList(ast.val[1]) ||
-                    ast.val[1] instanceof MalVector)
+                    isVector(ast.val[1]))
             ) {
                 log(`${indent}EVAL Special form let*`)
                 const newEnv = new Env(env);
@@ -221,10 +221,10 @@ export function EVAL(ast, env, depth=0) {
                     }
                 }
             }
-        } else if (ast instanceof MalVector) {
+        } else if (isVector(ast)) {
             log(`${indent}EVAL vector`)
             return new MalVector(ast.val.map((item) => EVAL(item, env, depth+1)));
-        } else if (ast instanceof MalHashMap) {
+        } else if (isHashMap(ast)) {
             log(`${indent}EVAL hashmap`)
             return new MalHashMap(ast.val.map((item) => EVAL(item, env, depth+1)));
         } else {

@@ -3,7 +3,7 @@ import { read_str } from './reader.mjs';
 import { pr_str } from './printer.mjs';
 import { Env, KeyNotFoundError } from './env.mjs';
 import fs from 'fs';
-import { isList, MalSymbol, MalInt, MalHashMap, MalVector } from './types.mjs';
+import { isList, isVector, isHashMap,MalSymbol, MalInt, MalHashMap, MalVector } from './types.mjs';
 
 const repl_env = new Env(null)
 repl_env.set("+", (a, b) => new MalInt(a.val + b.val));
@@ -30,7 +30,7 @@ function EVAL(ast, env) {
     } else if (isList(ast) && ast.val.length > 0) {
         if (ast.val[0] instanceof MalSymbol && ast.val[0].val === "def!") {
             return env.set(ast.val[1].val, EVAL(ast.val[2], env));
-        } else if (ast.val[0] instanceof MalSymbol && ast.val[0].val === "let*" && (isList(ast.val[1]) || ast.val[1] instanceof MalVector)) { 
+        } else if (ast.val[0] instanceof MalSymbol && ast.val[0].val === "let*" && (isList(ast.val[1]) || isVector(ast.val[1]))) { 
             const newEnv = new Env(env);
             const list = ast.val[1].val;
             for (let i = 0; i < list.length; i = i + 2) {
@@ -47,9 +47,9 @@ function EVAL(ast, env) {
                 console.log(e);
             }
         }
-    } else if (ast instanceof MalVector) {
+    } else if (isVector(ast)) {
         return new MalVector(ast.val.map((item) => EVAL(item, env)));
-    } else if (ast instanceof MalHashMap) {
+    } else if (isHashMap(ast)) {
         return new MalHashMap(ast.val.map((item) => EVAL(item, env)));
     } else {
         return ast;
